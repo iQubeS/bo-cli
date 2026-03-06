@@ -134,7 +134,9 @@ Module can be `company`, `lead`, or `project`.
 | `bo config show` | Show current configuration |
 | `bo config test` | Test server connectivity |
 | `bo config enums` | Show valid enum values |
-| `bo cache clear` | Clear the CLI cache |
+| `bo cache` | Show cache status |
+| `bo cache --clear` | Clear expired cache entries |
+| `bo cache --clear --all` | Clear all cache |
 
 ## Common Flags
 

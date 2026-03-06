@@ -142,6 +142,17 @@ function formatValue(value: unknown): string {
     return '';
   }
   if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    // For nested objects, try to extract a readable name field
+    const nameKey = Object.keys(obj).find((k) => /name$/i.test(k) && typeof obj[k] === 'string');
+    if (nameKey && obj[nameKey]) {
+      return String(obj[nameKey]);
+    }
+    // Flatten simple objects to "key: value" pairs
+    const entries = Object.entries(obj).filter(([, v]) => v !== null && v !== undefined && v !== '');
+    if (entries.length <= 3) {
+      return entries.map(([k, v]) => `${k}: ${v}`).join(', ');
+    }
     return JSON.stringify(value);
   }
   return String(value);
