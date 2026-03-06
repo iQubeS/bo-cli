@@ -23,6 +23,7 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "npx oclif manifest",
+    "prepare": "npm run build",
     "dev": "tsc && node ./dist/bin/run.js",
     "start": "node ./bin/run.mjs",
     "test": "vitest run",
