@@ -61,7 +61,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
           spinner.succeed('Project created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create project');
       this.exit(1);

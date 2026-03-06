@@ -62,7 +62,7 @@ export default class LeadsCreateCommand extends BaseCommand {
           spinner.succeed('Lead created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create lead');
       this.exit(1);

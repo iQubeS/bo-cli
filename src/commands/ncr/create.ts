@@ -64,7 +64,7 @@ export default class NcrCreateCommand extends BaseCommand {
           spinner.succeed('NCR created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create NCR');
       this.exit(1);

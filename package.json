@@ -1,6 +1,6 @@
 {
   "name": "bo-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Business Online CLI - Command-line interface for Business Online platform",
   "main": "./dist/index.js",
   "type": "module",

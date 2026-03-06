@@ -67,7 +67,7 @@ export default class LeadsUpdateCommand extends BaseCommand {
           spinner.succeed('Lead updated successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to update lead');
       this.exit(1);

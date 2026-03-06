@@ -30,7 +30,7 @@ export default class StatusCommand extends BaseCommand {
 
     try {
       connectionManager.setConfig(config, environment);
-      await connectionManager.connectAll();
+      await connectionManager.connectAll({ listTools: true });
 
       for (const conn of connectionManager.getAllConnections()) {
         const serverIndex = servers.findIndex(

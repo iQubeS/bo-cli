@@ -70,7 +70,7 @@ export default class NcrUpdateCommand extends BaseCommand {
           spinner.succeed('NCR updated successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to update NCR');
       this.exit(1);

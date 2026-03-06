@@ -68,7 +68,7 @@ export default class ContactsUpdateCommand extends BaseCommand {
           spinner.succeed('Contact updated successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to update contact');
       this.exit(1);

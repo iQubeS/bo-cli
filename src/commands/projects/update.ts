@@ -67,7 +67,7 @@ export default class ProjectsUpdateCommand extends BaseCommand {
           spinner.succeed('Project updated successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to update project');
       this.exit(1);

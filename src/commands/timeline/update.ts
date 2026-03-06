@@ -84,7 +84,7 @@ export default class TimelineUpdateCommand extends BaseCommand {
           spinner.succeed('Timeline event updated successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to update timeline event');
       this.exit(1);

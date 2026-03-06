@@ -73,7 +73,7 @@ export default class ConfigEnumsCommand extends BaseCommand {
           }
         }
         console.log();
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to load enums');
       this.exit(1);

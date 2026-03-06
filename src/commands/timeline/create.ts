@@ -74,7 +74,7 @@ export default class TimelineCreateCommand extends BaseCommand {
           spinner.succeed('Timeline event created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create timeline event');
       this.exit(1);

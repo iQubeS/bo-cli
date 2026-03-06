@@ -52,7 +52,8 @@ export abstract class BaseCommand extends Command {
 
   protected async withConnection<T>(
     serverName: string,
-    fn: (client: McpClient) => Promise<T>
+    fn: (client: McpClient) => Promise<T>,
+    options?: { loadEnums?: boolean }
   ): Promise<T> {
     const config = await loadConfig();
     const env = getActiveEnvironment(config);
@@ -69,7 +70,9 @@ export abstract class BaseCommand extends Command {
       if (this.debugMode) {
         client.debugLog = (label, data) => this.debugLog(label, data);
       }
-      await loadEnums(client);
+      if (options?.loadEnums) {
+        await loadEnums(client);
+      }
       return await fn(client);
     } finally {
       try {

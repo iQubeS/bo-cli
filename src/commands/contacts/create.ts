@@ -60,7 +60,7 @@ export default class ContactsCreateCommand extends BaseCommand {
           spinner.succeed('Contact created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create contact');
       this.exit(1);

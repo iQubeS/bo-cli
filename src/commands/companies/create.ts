@@ -65,7 +65,7 @@ export default class CompaniesCreateCommand extends BaseCommand {
           spinner.succeed('Company created successfully!');
         }
         console.log(formatOutput(result, { format }));
-      });
+      }, { loadEnums: true });
     } catch (error) {
       this.printClassifiedError(error, 'Failed to create company');
       this.exit(1);

@@ -18,7 +18,7 @@ export class ConnectionManager {
     this.environment = environment || config.defaultEnvironment || 'production';
   }
 
-  async connectToServer(serverName: string): Promise<ServerConnection> {
+  async connectToServer(serverName: string, options?: { listTools?: boolean }): Promise<ServerConnection> {
     if (!this.config) {
       throw new Error('Configuration not set');
     }
@@ -41,13 +41,17 @@ export class ConnectionManager {
         token: envConfig.token,
       });
 
-      const tools = await client.listTools();
+      let toolCount: number | undefined;
+      if (options?.listTools) {
+        const tools = await client.listTools();
+        toolCount = tools.length;
+      }
 
       const connection: ServerConnection = {
         name: serverName,
         client,
         connected: true,
-        tools: tools.length,
+        tools: toolCount,
       };
 
       this.clients.set(serverName, connection);
@@ -77,29 +81,20 @@ export class ConnectionManager {
     return Array.from(this.clients.values());
   }
 
-  async connectAll(): Promise<ServerConnection[]> {
+  async connectAll(options?: { listTools?: boolean }): Promise<ServerConnection[]> {
     if (!this.config) {
       throw new Error('Configuration not set');
     }
 
     const serverNames = ['customer', 'leads', 'projects', 'ncr'] as const;
-    const connections: ServerConnection[] = [];
+    const results = await Promise.allSettled(
+      serverNames.map((name) => this.connectToServer(name, options))
+    );
 
-    for (const name of serverNames) {
-      try {
-        const connection = await this.connectToServer(name);
-        connections.push(connection);
-      } catch {
-        // Continue connecting to other servers
-        connections.push({
-          name,
-          client: new McpClient(),
-          connected: false,
-        });
-      }
-    }
-
-    return connections;
+    return results.map((result, i) => {
+      if (result.status === 'fulfilled') return result.value;
+      return { name: serverNames[i], client: new McpClient(), connected: false };
+    });
   }
 
   async disconnectAll(): Promise<void> {
