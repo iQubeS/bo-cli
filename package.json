@@ -1,0 +1,89 @@
+{
+  "name": "bo-cli",
+  "version": "1.0.0",
+  "description": "Business Online CLI - Command-line interface for Business Online platform",
+  "main": "./dist/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "bo": "./bin/bo.cjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "oclif.manifest.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "npx oclif manifest",
+    "dev": "tsc && node ./dist/bin/run.js",
+    "start": "node ./bin/run.mjs",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "cli",
+    "business-online",
+    "crm",
+    "mcp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@inquirer/prompts": "^6.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@oclif/core": "^3.27.0",
+    "@oclif/plugin-autocomplete": "^3.2.40",
+    "@oclif/plugin-plugins": "^5.4.56",
+    "@oclif/plugin-update": "^4.7.19",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
+    "cosmiconfig": "^8.3.6",
+    "ora": "^8.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0",
+    "vitest": "^2.0.0"
+  },
+  "oclif": {
+    "bin": "bo",
+    "commands": "./dist/commands",
+    "flexibleTaxonomy": true,
+    "topicSeparator": " ",
+    "plugins": [
+      "@oclif/plugin-autocomplete",
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-update"
+    ],
+    "topics": {
+      "companies": { "description": "Manage companies" },
+      "contacts": { "description": "Manage contacts" },
+      "leads": { "description": "Manage leads" },
+      "projects": { "description": "Manage projects" },
+      "ncr": { "description": "Manage NCR cards" },
+      "timeline": { "description": "Manage timeline events" },
+      "qcp": { "description": "Manage QCPs" },
+      "config": { "description": "CLI configuration" }
+    },
+    "autocomplete": {
+      "description": "Install autocomplete for bo CLI",
+      "hint": "Add --refresh-cache to regenerate completions"
+    },
+    "update": {
+      "description": "Update bo CLI",
+      "registry": "npm",
+      "s3": {
+        "bucket": "bo-cli-releases"
+      }
+    }
+  }
+}
