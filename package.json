@@ -36,7 +36,7 @@
     "mcp"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@inquirer/prompts": "^6.0.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
