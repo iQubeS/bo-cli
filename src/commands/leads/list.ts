@@ -9,10 +9,12 @@ export default class LeadsListCommand extends BaseCommand {
     '$ bo leads list',
     '$ bo leads list --status Active',
     '$ bo leads list --type Customer',
+    '$ bo leads list --company-id <id>',
   ];
 
   static flags = {
-    status: Flags.string({ description: 'Filter by status' }),
+    'company-id': Flags.string({ description: 'Filter by company ID' }),
+    status: Flags.string({ description: 'Filter by status (see: bo config enums --category leads)' }),
     type: Flags.string({ description: 'Filter by lead type' }),
     search: Flags.string({ description: 'Search text' }),
     sort: Flags.string({ description: 'Sort fields (comma-separated, prefix - for desc)' }),
@@ -28,6 +30,7 @@ export default class LeadsListCommand extends BaseCommand {
 
     try {
       const params: Record<string, unknown> = {};
+      if (flags['company-id']) params.companyId = flags['company-id'];
       if (flags.status) params.status = flags.status;
       if (flags.type) params.type = flags.type;
       if (flags.search) params.search = flags.search;

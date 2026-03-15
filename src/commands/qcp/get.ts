@@ -22,13 +22,7 @@ export default class QcpGetCommand extends BaseCommand {
     const { args, flags } = await this.parse(QcpGetCommand);
     const format = this.getFormat(flags);
 
-    const toolMap: Record<string, string> = {
-      company: 'retrieve_company_qcp',
-      lead: 'retrieve_lead_qcp',
-      project: 'retrieve_project_qcp',
-    };
-
-    const toolName = toolMap[args.module];
+    const toolName = this.resolveQcpTool(args.module, 'get');
     if (!toolName) {
       printError(`Invalid module: ${args.module}. Use company, lead, or project`);
       this.exit(1);

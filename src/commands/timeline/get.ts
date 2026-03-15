@@ -22,13 +22,7 @@ export default class TimelineGetCommand extends BaseCommand {
     const { args, flags } = await this.parse(TimelineGetCommand);
     const format = this.getFormat(flags);
 
-    const toolMap: Record<string, string> = {
-      company: 'retrieve_company_timeline_event',
-      lead: 'retrieve_lead_timeline_event',
-      project: 'retrieve_project_timeline_event',
-    };
-
-    const toolName = toolMap[args.module];
+    const toolName = this.resolveTimelineTool(args.module, 'get');
     if (!toolName) {
       printError(`Invalid module: ${args.module}. Use company, lead, or project`);
       this.exit(1);

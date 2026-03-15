@@ -9,10 +9,12 @@ export default class ProjectsListCommand extends BaseCommand {
     '$ bo projects list',
     '$ bo projects list --activity Started',
     '$ bo projects list --type Customer',
+    '$ bo projects list --company-id <id>',
   ];
 
   static flags = {
-    activity: Flags.string({ description: 'Filter by activity' }),
+    'company-id': Flags.string({ description: 'Filter by company ID' }),
+    activity: Flags.string({ description: 'Filter by activity (see: bo config enums --category project)' }),
     type: Flags.string({ description: 'Filter by project type' }),
     search: Flags.string({ description: 'Search text' }),
     sort: Flags.string({ description: 'Sort fields (comma-separated, prefix - for desc)' }),
@@ -28,6 +30,7 @@ export default class ProjectsListCommand extends BaseCommand {
 
     try {
       const params: Record<string, unknown> = {};
+      if (flags['company-id']) params.companyId = flags['company-id'];
       if (flags.activity) params.activity = flags.activity;
       if (flags.type) params.type = flags.type;
       if (flags.search) params.search = flags.search;

@@ -23,7 +23,7 @@ export default class CacheCommand extends Command {
     list: Flags.boolean({ description: 'List cache entries' }),
     get: Flags.string({ description: 'Get cache value by key' }),
     set: Flags.string({ description: 'Set cache value (key)' }),
-    value: Flags.string({ description: 'Value to set (used with --set)' }),
+    value: Flags.string({ description: 'Value to set (used with --set)', dependsOn: ['set'] }),
     ttl: Flags.integer({ description: 'Time to live in milliseconds', default: DEFAULT_TTL }),
     all: Flags.boolean({ description: 'Clear all cache including persistent' }),
   };

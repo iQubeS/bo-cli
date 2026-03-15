@@ -7,15 +7,26 @@ export interface ServerStatus {
   tools?: number;
 }
 
+export interface RestStatus {
+  connected: boolean;
+  baseUrl: string;
+  tenantName: string;
+  apiVersion: string;
+  enumCategories?: number;
+  enumSource?: 'custom' | 'defaults';
+}
+
+export interface SplashOptions {
+  mode: 'mcp' | 'rest';
+  servers?: ServerStatus[];
+  rest?: RestStatus;
+}
+
 export function renderSplash(
   version: string,
   environment: string,
-  servers: ServerStatus[]
+  options: SplashOptions
 ): string {
-  const connectedCount = servers.filter((s) => s.connected).length;
-  const totalCount = servers.length;
-  const statusIcon = connectedCount === totalCount ? chalk.green('OK') : chalk.red('!!');
-
   const boxWidth = 44;
 
   const logo = [
@@ -29,7 +40,22 @@ export function renderSplash(
     ' \\___/ |_|\\_||____||___||_|\\_||___|       ',
   ];
 
-  const statusText = ` ${version} | ${environment} | ${connectedCount}/${totalCount} servers`;
+  let statusText: string;
+  let statusIcon: string;
+
+  if (options.mode === 'rest') {
+    const rest = options.rest;
+    const ok = rest?.connected ?? false;
+    statusIcon = ok ? chalk.green('OK') : chalk.red('!!');
+    statusText = ` ${version} | ${environment} | REST API`;
+  } else {
+    const servers = options.servers ?? [];
+    const connectedCount = servers.filter((s) => s.connected).length;
+    const totalCount = servers.length;
+    statusIcon = connectedCount === totalCount ? chalk.green('OK') : chalk.red('!!');
+    statusText = ` ${version} | ${environment} | ${connectedCount}/${totalCount} servers`;
+  }
+
   const pad = Math.max(0, boxWidth - statusText.length - 3);
 
   const lines = [
@@ -42,9 +68,23 @@ export function renderSplash(
     '',
   ];
 
-  if (servers.length > 0) {
+  if (options.mode === 'rest' && options.rest) {
+    const rest = options.rest;
+    const connIcon = rest.connected ? chalk.green('*') : chalk.red('o');
+    const enumLabel = rest.enumSource === 'custom'
+      ? chalk.green(`${rest.enumCategories} custom`)
+      : chalk.dim('defaults');
+
+    lines.push(chalk.bold('REST API:'));
+    lines.push(`  ${connIcon} Connection   ${rest.connected ? chalk.green('Connected') : chalk.red('Not connected')}`);
+    lines.push(`    Tenant       ${chalk.white(rest.tenantName)}`);
+    lines.push(`    API version  ${chalk.white(rest.apiVersion)}`);
+    lines.push(`    Endpoint     ${chalk.dim(rest.baseUrl)}`);
+    lines.push(`    Enums        ${enumLabel}`);
+    lines.push('');
+  } else if (options.servers && options.servers.length > 0) {
     lines.push(chalk.bold('Server Status:'));
-    for (const server of servers) {
+    for (const server of options.servers) {
       const icon = server.connected ? chalk.green('*') : chalk.red('o');
       const tools = server.tools !== undefined ? ` (${server.tools} tools)` : '';
       lines.push(`  ${icon} ${server.name}${tools}`);

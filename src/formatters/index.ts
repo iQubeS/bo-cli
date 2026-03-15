@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import chalk from 'chalk';
 import cliTable3 from 'cli-table3';
 
@@ -18,6 +17,7 @@ export function formatTable(
   rows: string[][],
   options: FormatOptions = {}
 ): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const table = new (cliTable3 as any)({
     head: headers,
     style: {
@@ -96,7 +96,14 @@ export function formatOutput(
         : formatTable(headers, rows, options);
 
       if (meta) {
-        return `${table}\n${chalk.grey(`Showing ${items.length} of ${meta.totalCount} results`)}`;
+        let summary = `Showing ${items.length} of ${meta.totalCount} results`;
+        if (meta.hasNext || meta.hasPrev) {
+          const hints: string[] = [];
+          if (meta.hasPrev) hints.push('--offset to go back');
+          if (meta.hasNext) hints.push('--offset/--limit for next page');
+          summary += ` (${hints.join(', ')})`;
+        }
+        return `${table}\n${chalk.grey(summary)}`;
       }
       return table;
     }
@@ -122,7 +129,13 @@ export function formatOutput(
   return String(items);
 }
 
-function extractPaginatedData(data: unknown): { items: unknown; meta?: { totalCount: number } } {
+export interface PaginationMeta {
+  totalCount: number;
+  hasNext?: boolean;
+  hasPrev?: boolean;
+}
+
+function extractPaginatedData(data: unknown): { items: unknown; meta?: PaginationMeta } {
   if (
     typeof data === 'object' &&
     data !== null &&
@@ -131,7 +144,15 @@ function extractPaginatedData(data: unknown): { items: unknown; meta?: { totalCo
   ) {
     const obj = data as Record<string, unknown>;
     const tc = obj.totalCount;
-    const meta = tc !== undefined && tc !== null ? { totalCount: Number(tc) } : undefined;
+    const meta: PaginationMeta | undefined = tc !== undefined && tc !== null ? { totalCount: Number(tc) } : undefined;
+
+    // Extract pagination link info if present (from REST API Link header)
+    const pagination = obj.pagination as Record<string, string> | undefined;
+    if (meta && pagination) {
+      meta.hasNext = !!pagination.next;
+      meta.hasPrev = !!pagination.prev;
+    }
+
     return { items: obj.data, meta };
   }
   return { items: data };

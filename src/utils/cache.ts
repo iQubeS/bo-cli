@@ -74,6 +74,11 @@ class CacheManager {
     
     try {
       fs.writeFileSync(this.cacheFile, JSON.stringify(this.memoryCache, null, 2));
+      try {
+        fs.chmodSync(this.cacheFile, 0o600);
+      } catch {
+        // chmod may not work on all platforms (e.g., Windows)
+      }
       this.dirty = false;
     } catch (error) {
       console.error('Warning: Failed to write cache to disk:', error instanceof Error ? error.message : String(error));

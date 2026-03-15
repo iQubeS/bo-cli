@@ -44,7 +44,7 @@ export default class LeadsCreateCommand extends BaseCommand {
         }
 
         if (flags.interactive) {
-          const confirmed = await promptConfirm(`Create lead "${fields.name}"?`);
+          const confirmed = await promptConfirm(`Create lead "${fields.leadName}"?`);
           if (!confirmed) {
             console.log('Cancelled.');
             return;
@@ -72,19 +72,23 @@ export default class LeadsCreateCommand extends BaseCommand {
   private async collectFields(flags: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (flags.interactive) {
       const fields: Record<string, unknown> = {};
-      fields.name = await promptText('Lead name:', { required: true, default: flags.name as string });
+      fields.leadName = await promptText('Lead name:', { required: true, default: flags.name as string });
       fields.companyId = await promptText('Company ID:', { required: true, default: flags['company-id'] as string });
       fields.leadTypeId = await promptText('Lead type ID:', { required: true, default: flags['lead-type-id'] as string });
       const description = await promptText('Description (optional):');
       if (description) fields.description = description;
       const status = await promptSelect('Status:', leadsStatus());
-      if (status) fields.status = status;
+      if (status) fields.leadsStatus = status;
       const probability = await promptSelect('Win probability:', leadsProbability());
-      if (probability) fields.probabilityForSale = probability;
+      if (probability) fields.leadsProbabilityForSale = probability;
       const lcmStatus = await promptSelect('LCM status:', leadsLcmStatus());
-      if (lcmStatus) fields.lcmStatus = lcmStatus;
+      if (lcmStatus) fields.leadsLcmStatus = lcmStatus;
       const contractValue = await promptText('Contract value (optional):');
-      if (contractValue) fields.contractValue = Number(contractValue);
+      if (contractValue) {
+        const cv = parseFloat(contractValue);
+        if (Number.isNaN(cv)) throw new Error('Invalid contract value: must be a number');
+        fields.contractValue = cv;
+      }
       const responsible = await promptText('Internal responsible email (optional):');
       if (responsible) fields.internalResponsibleEmail = responsible;
       return fields;
@@ -100,15 +104,19 @@ export default class LeadsCreateCommand extends BaseCommand {
     validateEnum(flags['lcm-status'] as string | undefined, leadsLcmStatus(), 'LCM status');
 
     const fields: Record<string, unknown> = {
-      name: flags.name,
+      leadName: flags.name,
       companyId: flags['company-id'],
       leadTypeId: flags['lead-type-id'],
     };
     if (flags.description) fields.description = flags.description;
-    if (flags.status) fields.status = flags.status;
-    if (flags.probability) fields.probabilityForSale = flags.probability;
-    if (flags['lcm-status']) fields.lcmStatus = flags['lcm-status'];
-    if (flags['contract-value']) fields.contractValue = Number(flags['contract-value']);
+    if (flags.status) fields.leadsStatus = flags.status;
+    if (flags.probability) fields.leadsProbabilityForSale = flags.probability;
+    if (flags['lcm-status']) fields.leadsLcmStatus = flags['lcm-status'];
+    if (flags['contract-value']) {
+      const cv = parseFloat(flags['contract-value'] as string);
+      if (Number.isNaN(cv)) throw new Error('Invalid --contract-value: must be a number');
+      fields.contractValue = cv;
+    }
     if (flags['expected-close-date']) fields.expectedCloseDate = flags['expected-close-date'];
     if (flags['internal-responsible']) fields.internalResponsibleEmail = flags['internal-responsible'];
     return fields;

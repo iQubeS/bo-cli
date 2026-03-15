@@ -32,13 +32,7 @@ export default class TimelineCreateCommand extends BaseCommand {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(TimelineCreateCommand);
 
-    const toolMap: Record<string, string> = {
-      company: 'create_company_timeline_event',
-      lead: 'create_lead_timeline_event',
-      project: 'create_project_timeline_event',
-    };
-
-    const toolName = toolMap[args.module];
+    const toolName = this.resolveTimelineTool(args.module, 'create');
     if (!toolName) {
       printError(`Invalid module: ${args.module}. Use company, lead, or project`);
       this.exit(1);
@@ -102,12 +96,13 @@ export default class TimelineCreateCommand extends BaseCommand {
 
     validateEnum(flags['log-type'] as string, logType(), 'log type');
 
-    return {
+    const result: Record<string, unknown> = {
       ...entityId,
       name: flags.name,
       logType: flags['log-type'],
       date: (flags.date as string) || new Date().toISOString(),
-      description: flags.description,
     };
+    if (flags.description) result.description = flags.description;
+    return result;
   }
 }

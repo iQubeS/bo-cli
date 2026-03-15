@@ -1,53 +1,46 @@
 import type { McpClient } from '../mcp/client.js';
+import type { EnumCategoryConfig } from '../config/index.js';
 import * as staticEnums from './index.js';
 
-interface EnumData {
-  Company?: {
-    companyActive?: string[];
-    companySupplierCategory?: string[];
-    companyApprovedSupplier?: string[];
-  };
-  Leads?: {
-    leadsStatus?: string[];
-    leadsLcmStatus?: string[];
-    leadsProbabilityForSale?: string[];
-  };
-  Project?: {
-    projectActivity?: string[];
-  };
-  Contact?: {
-    contactLegalBasis?: string[];
-    contactStatus?: string[];
-    contactMarketingConsent?: string[];
-  };
-  NCR?: {
-    ncrTypeRegistration?: string[];
-    ncrDirectCause?: string[];
-    ncrLocation?: string[];
-    ncrFeedbackType?: string[];
-    ncrCategory?: string[];
-    ncrRootCause?: string[];
-  };
-}
+let cached: EnumCategoryConfig | null = null;
 
-let cached: EnumData | null = null;
-
-export async function loadEnums(client: McpClient): Promise<void> {
+/**
+ * Load enums from an MCP client (server resource) or directly from a config data object.
+ *
+ * - MCP mode: pass an McpClient — reads from `business-online://enums` resource
+ * - REST mode: pass an EnumCategoryConfig object — loaded from config.enums[tenantName]
+ */
+export async function loadEnums(source: McpClient | EnumCategoryConfig): Promise<void> {
   if (cached) return;
-  try {
-    const response = await client.readResource('business-online://enums') as {
-      contents?: { text?: string }[];
-    };
-    const text = response?.contents?.[0]?.text;
-    if (text) {
-      cached = JSON.parse(text) as EnumData;
+
+  // Check if source is an McpClient by looking for the readResource method
+  if ('readResource' in source && typeof (source as McpClient).readResource === 'function') {
+    // MCP path — read from server resource
+    try {
+      const client = source as McpClient;
+      const response = await client.readResource('business-online://enums') as {
+        contents?: { text?: string }[];
+      };
+      const text = response?.contents?.[0]?.text;
+      if (text) {
+        cached = JSON.parse(text) as EnumCategoryConfig;
+      }
+    } catch {
+      // Fall back to static enums silently
     }
-  } catch {
-    // Fall back to static enums silently
+    return;
   }
+
+  // Direct enum data (from config, used in REST mode)
+  cached = source as EnumCategoryConfig;
 }
 
-// Getters — return server values if available, else static fallback
+/** Reset cached enums (useful for testing or when switching environments). */
+export function resetEnumCache(): void {
+  cached = null;
+}
+
+// Getters — return server/config values if available, else static fallback
 export function leadsStatus(): readonly string[] {
   return cached?.Leads?.leadsStatus ?? staticEnums.LeadStatus;
 }

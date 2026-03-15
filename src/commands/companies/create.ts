@@ -47,7 +47,7 @@ export default class CompaniesCreateCommand extends BaseCommand {
         }
 
         if (flags.interactive) {
-          const confirmed = await promptConfirm(`Create company "${fields.name}"?`);
+          const confirmed = await promptConfirm(`Create company "${fields.companyName}"?`);
           if (!confirmed) {
             console.log('Cancelled.');
             return;
@@ -75,7 +75,7 @@ export default class CompaniesCreateCommand extends BaseCommand {
   private async collectFields(flags: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (flags.interactive) {
       const fields: Record<string, unknown> = {};
-      fields.name = await promptText('Company name:', { required: true, default: flags.name as string });
+      fields.companyName = await promptText('Company name:', { required: true, default: flags.name as string });
       fields.companyTypeId = await promptText('Company type ID:', { required: true, default: flags['type-id'] as string });
       const phone = await promptText('Phone (optional):');
       if (phone) fields.companyPhone = phone;
@@ -121,7 +121,7 @@ export default class CompaniesCreateCommand extends BaseCommand {
     }
 
     const fields: Record<string, unknown> = {
-      name: flags.name,
+      companyName: flags.name,
       companyTypeId: flags['type-id'],
       mainContact: {
         name: flags['contact-name'],

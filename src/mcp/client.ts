@@ -1,6 +1,9 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createRequire } from 'module';
+import type { DebugLogger } from '../backend/types.js';
+
+export type { DebugLogger } from '../backend/types.js';
 
 const require = createRequire(import.meta.url);
 const { version: cliVersion } = require('../../package.json');
@@ -14,8 +17,6 @@ export interface McpClientOptions {
   serverUrl: string;
   token?: string;
 }
-
-export type DebugLogger = (label: string, data: unknown) => void;
 
 export class McpClient {
   private client: Client | null = null;

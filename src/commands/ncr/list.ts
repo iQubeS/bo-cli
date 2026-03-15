@@ -9,10 +9,15 @@ export default class NcrListCommand extends BaseCommand {
     '$ bo ncr list',
     '$ bo ncr list --type "Non-Conformance"',
     '$ bo ncr list --search issue',
+    '$ bo ncr list --company-id <id>',
   ];
 
   static flags = {
-    type: Flags.string({ description: 'Filter by NCR type' }),
+    type: Flags.string({ description: 'Filter by NCR type (see: bo config enums --category ncr)' }),
+    'company-id': Flags.string({ description: 'Filter by company ID' }),
+    'project-id': Flags.string({ description: 'Filter by project ID' }),
+    'lead-id': Flags.string({ description: 'Filter by lead ID' }),
+    'department-id': Flags.string({ description: 'Filter by department ID' }),
     search: Flags.string({ description: 'Search text' }),
     sort: Flags.string({ description: 'Sort fields (comma-separated, prefix - for desc)' }),
     limit: Flags.integer({ description: 'Number of records per page' }),
@@ -28,6 +33,10 @@ export default class NcrListCommand extends BaseCommand {
     try {
       const params: Record<string, unknown> = {};
       if (flags.type) params.typeRegistration = flags.type;
+      if (flags['company-id']) params.companyId = flags['company-id'];
+      if (flags['project-id']) params.projectId = flags['project-id'];
+      if (flags['lead-id']) params.leadId = flags['lead-id'];
+      if (flags['department-id']) params.departmentId = flags['department-id'];
       if (flags.search) params.search = flags.search;
       if (flags.sort) params.sort = flags.sort;
       if (flags.limit) params.limit = flags.limit;

@@ -88,6 +88,12 @@ export default class NcrCreateCommand extends BaseCommand {
       if (feedbackType) fields.feedbackType = feedbackType;
       const companyId = await promptText('Company ID (optional):');
       if (companyId) fields.companyId = companyId;
+      const projectId = await promptText('Project ID (optional):');
+      if (projectId) fields.projectId = projectId;
+      const leadId = await promptText('Lead ID (optional):');
+      if (leadId) fields.leadId = leadId;
+      const departmentId = await promptText('Department ID (optional):');
+      if (departmentId) fields.departmentId = departmentId;
       const assignedTo = await promptText('Assigned to email (optional):');
       if (assignedTo) fields.assignedToEmail = assignedTo;
       return fields;

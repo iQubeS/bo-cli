@@ -42,7 +42,7 @@ export default class ContactsCreateCommand extends BaseCommand {
         }
 
         if (flags.interactive) {
-          const confirmed = await promptConfirm(`Create contact "${fields.name}"?`);
+          const confirmed = await promptConfirm(`Create contact "${fields.contactName}"?`);
           if (!confirmed) {
             console.log('Cancelled.');
             return;
@@ -70,9 +70,9 @@ export default class ContactsCreateCommand extends BaseCommand {
   private async collectFields(flags: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (flags.interactive) {
       const fields: Record<string, unknown> = {};
-      fields.name = await promptText('Contact name:', { required: true, default: flags.name as string });
-      fields.legalBasis = await promptSelect('Legal basis:', contactLegalBasis(), { required: true });
-      fields.status = await promptSelect('Status:', contactStatus(), { required: true });
+      fields.contactName = await promptText('Contact name:', { required: true, default: flags.name as string });
+      fields.contactLegalBasis = await promptSelect('Legal basis:', contactLegalBasis(), { required: true });
+      fields.contactStatus = await promptSelect('Status:', contactStatus(), { required: true });
       const companyId = await promptText('Company ID (optional):');
       if (companyId) fields.companyId = companyId;
       const email = await promptText('Email (optional):');
@@ -93,9 +93,9 @@ export default class ContactsCreateCommand extends BaseCommand {
     validateEnum(flags.status as string, contactStatus(), 'status');
 
     const fields: Record<string, unknown> = {
-      name: flags.name,
-      legalBasis: flags['legal-basis'],
-      status: flags.status,
+      contactName: flags.name,
+      contactLegalBasis: flags['legal-basis'],
+      contactStatus: flags.status,
     };
     if (flags['company-id']) fields.companyId = flags['company-id'];
     if (flags.email) fields.email = flags.email;

@@ -96,6 +96,7 @@ export default class CompaniesUpdateCommand extends BaseCommand {
       if (flags['type-id']) updateData.companyTypeId = flags['type-id'];
       if (flags.phone) updateData.companyPhone = flags.phone;
       if (flags.email) updateData.email = flags.email;
+      if (flags.address) updateData.address = flags.address;
       if (flags.active !== undefined) updateData.active = flags.active;
     }
 

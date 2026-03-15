@@ -25,13 +25,7 @@ export default class QcpListCommand extends BaseCommand {
     const { args, flags } = await this.parse(QcpListCommand);
     const format = this.getFormat(flags);
 
-    const toolMap: Record<string, string> = {
-      company: 'retrieve_all_company_qcps',
-      lead: 'retrieve_all_lead_qcps',
-      project: 'retrieve_all_project_qcps',
-    };
-
-    const toolName = toolMap[args.module];
+    const toolName = this.resolveQcpTool(args.module, 'list');
     if (!toolName) {
       printError(`Invalid module: ${args.module}. Use company, lead, or project`);
       this.exit(1);

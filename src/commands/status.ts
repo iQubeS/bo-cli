@@ -1,7 +1,9 @@
 import { BaseCommand } from '../base-command.js';
-import { loadConfig, getActiveEnvironment } from '../config/index.js';
+import { loadConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../config/index.js';
+import type { McpEnvironmentConfig, RestEnvironmentConfig } from '../config/index.js';
 import { connectionManager } from '../mcp/connection-manager.js';
-import { renderSplash, type ServerStatus } from '../formatters/splash.js';
+import { HttpClient } from '../rest/http-client.js';
+import { renderSplash, type ServerStatus, type SplashOptions } from '../formatters/splash.js';
 import { printError, printInfo } from '../formatters/index.js';
 
 export default class StatusCommand extends BaseCommand {
@@ -12,10 +14,69 @@ export default class StatusCommand extends BaseCommand {
   async run(): Promise<void> {
     const config = await loadConfig();
     const environment = getActiveEnvironment(config);
-
     const envConfig = config.environments[environment];
-    const serverNames = ['customer', 'leads', 'projects', 'ncr'] as const;
+    const mode = getEnvironmentMode(envConfig);
+    const version = `v${this.config.version}`;
 
+    if (mode === 'rest' && isRestConfig(envConfig)) {
+      await this.showRestStatus(version, environment, envConfig, config);
+    } else {
+      await this.showMcpStatus(version, environment, config, envConfig as McpEnvironmentConfig | undefined);
+    }
+  }
+
+  private async showRestStatus(version: string, environment: string, envConfig: RestEnvironmentConfig, config: Awaited<ReturnType<typeof loadConfig>>): Promise<void> {
+    const apiKey = process.env.BO_CLI_API_KEY || envConfig.apiKey;
+    let connected = false;
+
+    if (apiKey) {
+      const httpClient = new HttpClient({
+        baseUrl: envConfig.baseUrl,
+        tenantName: envConfig.tenantName,
+        apiVersion: envConfig.apiVersion ?? 'v1',
+        apiKey,
+        maxRetries: 0,
+      });
+
+      try {
+        await httpClient.get('/companytypes');
+        connected = true;
+      } catch {
+        // Connection failed
+      }
+    }
+
+    // Determine enum configuration status
+    const tenantEnums = config.enums?.[envConfig.tenantName];
+    const enumCategories = tenantEnums ? Object.keys(tenantEnums).length : 0;
+    const enumSource: 'custom' | 'defaults' = tenantEnums ? 'custom' : 'defaults';
+
+    const options: SplashOptions = {
+      mode: 'rest',
+      rest: {
+        connected,
+        baseUrl: envConfig.baseUrl,
+        tenantName: envConfig.tenantName,
+        apiVersion: envConfig.apiVersion ?? 'v1',
+        enumCategories,
+        enumSource,
+      },
+    };
+
+    console.log(renderSplash(version, environment, options));
+
+    if (!apiKey) {
+      printInfo('API key not configured. Run: bo config set --interactive');
+    }
+  }
+
+  private async showMcpStatus(
+    version: string,
+    environment: string,
+    config: typeof import('../config/index.js').DEFAULT_CONFIG,
+    envConfig: McpEnvironmentConfig | undefined,
+  ): Promise<void> {
+    const serverNames = ['customer', 'leads', 'projects', 'ncr'] as const;
     const servers: ServerStatus[] = [];
 
     for (const name of serverNames) {
@@ -51,11 +112,11 @@ export default class StatusCommand extends BaseCommand {
       }
     }
 
-    const version = `v${this.config.version}`;
-    console.log(renderSplash(version, environment, servers));
+    const options: SplashOptions = { mode: 'mcp', servers };
+    console.log(renderSplash(version, environment, options));
 
     if (!envConfig?.token) {
-      printInfo(`Configuration not found. Run: bo config set`);
+      printInfo('Configuration not found. Run: bo config set');
     }
   }
 }

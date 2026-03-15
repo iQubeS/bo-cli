@@ -43,7 +43,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
         }
 
         if (flags.interactive) {
-          const confirmed = await promptConfirm(`Create project "${fields.name}"?`);
+          const confirmed = await promptConfirm(`Create project "${fields.projectName}"?`);
           if (!confirmed) {
             console.log('Cancelled.');
             return;
@@ -71,7 +71,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
   private async collectFields(flags: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (flags.interactive) {
       const fields: Record<string, unknown> = {};
-      fields.name = await promptText('Project name:', { required: true, default: flags.name as string });
+      fields.projectName = await promptText('Project name:', { required: true, default: flags.name as string });
       fields.companyId = await promptText('Company ID:', { required: true, default: flags['company-id'] as string });
       fields.departmentId = await promptText('Department ID:', { required: true, default: flags['department-id'] as string });
       fields.projectTypeId = await promptText('Project type ID:', { required: true, default: flags['project-type-id'] as string });
@@ -79,7 +79,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
       const description = await promptText('Description (optional):');
       if (description) fields.description = description;
       const activity = await promptSelect('Activity:', projectActivity());
-      if (activity) fields.activity = activity;
+      if (activity) fields.projectActivity = activity;
       const startDate = await promptText('Start date (optional, ISO format):');
       if (startDate) fields.projectStartDate = startDate;
       const endDate = await promptText('End date (optional, ISO format):');
@@ -95,14 +95,14 @@ export default class ProjectsCreateCommand extends BaseCommand {
     validateEnum(flags.activity as string | undefined, projectActivity(), 'activity');
 
     const fields: Record<string, unknown> = {
-      name: flags.name,
+      projectName: flags.name,
       companyId: flags['company-id'],
       departmentId: flags['department-id'],
       projectTypeId: flags['project-type-id'],
       internalResponsibleEmail: flags['internal-responsible'],
     };
     if (flags.description) fields.description = flags.description;
-    if (flags.activity) fields.activity = flags.activity;
+    if (flags.activity) fields.projectActivity = flags.activity;
     if (flags['start-date']) fields.projectStartDate = flags['start-date'];
     if (flags['end-date']) fields.projectEndDate = flags['end-date'];
     return fields;

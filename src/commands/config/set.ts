@@ -1,13 +1,12 @@
 import { Command, Flags } from '@oclif/core';
-import { input, password } from '@inquirer/prompts';
-import { loadConfig, saveConfig, getConfigPath, type BoCliConfig } from '../../config/index.js';
-import { printSuccess, printInfo } from '../../formatters/index.js';
+import { input, password, select } from '@inquirer/prompts';
+import { loadConfig, saveConfig, getConfigPath, type BoCliConfig, type McpEnvironmentConfig, type RestEnvironmentConfig } from '../../config/index.js';
+import { printSuccess, printInfo, printWarning } from '../../formatters/index.js';
 
 export default class ConfigSetCommand extends Command {
   static description = 'Configure the CLI';
 
   static examples = [
-    '$ bo config set',
     '$ bo config set --interactive',
   ];
 
@@ -36,11 +35,35 @@ export default class ConfigSetCommand extends Command {
       default: config.defaultEnvironment || 'production',
     });
 
-    if (!config.environments[environment]) {
-      config.environments[environment] = {
-        servers: {},
-        token: '',
-      };
+    config.defaultEnvironment = environment;
+
+    // Mode selection
+    const mode = await select({
+      message: 'Backend mode:',
+      choices: [
+        { name: 'MCP (Model Context Protocol)', value: 'mcp' },
+        { name: 'REST API', value: 'rest' },
+      ],
+      default: config.environments[environment] && 'mode' in config.environments[environment] && config.environments[environment].mode === 'rest' ? 'rest' : 'mcp',
+    }) as 'mcp' | 'rest';
+
+    if (mode === 'rest') {
+      config = await this.collectRestConfig(config, environment);
+    } else {
+      config = await this.collectMcpConfig(config, environment);
+    }
+
+    return config;
+  }
+
+  private async collectMcpConfig(config: BoCliConfig, environment: string): Promise<BoCliConfig> {
+    const existing = config.environments[environment];
+    const existingMcp = existing && !('mode' in existing && existing.mode === 'rest')
+      ? existing as McpEnvironmentConfig
+      : undefined;
+
+    if (existing && 'mode' in existing && existing.mode === 'rest') {
+      printWarning('Switching from REST to MCP mode. REST configuration will be replaced.');
     }
 
     const token = await password({
@@ -48,8 +71,10 @@ export default class ConfigSetCommand extends Command {
       mask: true,
     });
 
-    config.environments[environment].token = token;
-    config.defaultEnvironment = environment;
+    const mcpConfig: McpEnvironmentConfig = {
+      servers: existingMcp?.servers ?? {},
+      token,
+    };
 
     // Ask for server URLs
     const servers = ['customer', 'leads', 'projects', 'ncr'] as const;
@@ -57,12 +82,63 @@ export default class ConfigSetCommand extends Command {
     for (const server of servers) {
       const url = await input({
         message: `${server} server URL:`,
-        default: config.environments[environment].servers[server]?.url || '',
+        default: existingMcp?.servers[server]?.url || '',
       });
 
       if (url) {
-        config.environments[environment].servers[server] = { url };
+        mcpConfig.servers[server] = { url };
       }
+    }
+
+    config.environments[environment] = mcpConfig;
+    return config;
+  }
+
+  private async collectRestConfig(config: BoCliConfig, environment: string): Promise<BoCliConfig> {
+    const existing = config.environments[environment];
+    const existingRest = existing && 'mode' in existing && existing.mode === 'rest'
+      ? existing as RestEnvironmentConfig
+      : undefined;
+
+    if (existing && !existingRest) {
+      printWarning('Switching from MCP to REST mode. MCP configuration will be replaced.');
+    }
+
+    const baseUrl = await input({
+      message: 'API base URL:',
+      default: existingRest?.baseUrl || 'https://bo-api.azure-api.net',
+    });
+
+    const tenantName = await input({
+      message: 'Tenant name:',
+      default: existingRest?.tenantName || '',
+      validate: (v: string) => v.trim().length > 0 || 'Tenant name is required',
+    });
+
+    const apiVersion = await input({
+      message: 'API version:',
+      default: existingRest?.apiVersion || 'v1',
+    });
+
+    const apiKey = await password({
+      message: 'API key:',
+      mask: true,
+    });
+
+    const restConfig: RestEnvironmentConfig = {
+      mode: 'rest',
+      baseUrl: baseUrl.replace(/\/+$/, ''),
+      tenantName: tenantName.trim(),
+      apiVersion,
+      apiKey,
+    };
+
+    config.environments[environment] = restConfig;
+
+    // Initialize default enums for this tenant if not already configured
+    if (!config.enums?.[restConfig.tenantName]) {
+      printInfo('Default enum values have been set for your tenant.');
+      printInfo('Customize with: bo config enums --set --category <category> --field <field> --values "val1,val2"');
     }
 
     return config;

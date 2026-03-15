@@ -28,13 +28,7 @@ export default class TimelineListCommand extends BaseCommand {
     const { args, flags } = await this.parse(TimelineListCommand);
     const format = this.getFormat(flags);
 
-    const toolMap: Record<string, string> = {
-      company: 'retrieve_company_timeline_events',
-      lead: 'retrieve_lead_timeline_events',
-      project: 'retrieve_project_timeline_events',
-    };
-
-    const toolName = toolMap[args.module];
+    const toolName = this.resolveTimelineTool(args.module, 'list');
     if (!toolName) {
       printError(`Invalid module: ${args.module}. Use company, lead, or project`);
       this.exit(1);

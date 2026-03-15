@@ -1,5 +1,6 @@
 import { Command } from '@oclif/core';
-import { loadConfig, getConfigPath, getActiveEnvironment } from '../../config/index.js';
+import { loadConfig, getConfigPath, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../../config/index.js';
+import type { McpEnvironmentConfig, RestEnvironmentConfig } from '../../config/index.js';
 import { printInfo } from '../../formatters/index.js';
 
 export default class ConfigShowCommand extends Command {
@@ -17,14 +18,38 @@ export default class ConfigShowCommand extends Command {
     printInfo(`Default environment: ${config.defaultEnvironment}`);
 
     const envConfig = config.environments[environment];
-    if (envConfig) {
+    if (!envConfig) {
+      printInfo('\nNo configuration found for this environment.');
+      return;
+    }
+
+    const mode = getEnvironmentMode(envConfig);
+    printInfo(`\nMode: ${mode === 'rest' ? 'REST API' : 'MCP (Model Context Protocol)'}`);
+
+    if (isRestConfig(envConfig)) {
+      const rest = envConfig as RestEnvironmentConfig;
+      printInfo(`Base URL: ${rest.baseUrl}`);
+      printInfo(`Tenant: ${rest.tenantName}`);
+      printInfo(`API version: ${rest.apiVersion || 'v1'}`);
+      printInfo(`API key: ${rest.apiKey ? '***configured***' : 'NOT configured'}`);
+
+      // Show tenant enum status
+      const tenantEnums = config.enums?.[rest.tenantName];
+      if (tenantEnums) {
+        const categoryCount = Object.keys(tenantEnums).length;
+        printInfo(`\nCustom enums: ${categoryCount} categories configured`);
+      } else {
+        printInfo('\nCustom enums: Using defaults');
+      }
+    } else {
+      const mcp = envConfig as McpEnvironmentConfig;
       printInfo('\nServers configured:');
-      for (const [name, server] of Object.entries(envConfig.servers)) {
+      for (const [name, server] of Object.entries(mcp.servers)) {
         if (server?.url) {
           printInfo(`  - ${name}: ${server.url}`);
         }
       }
-      printInfo(`\nToken: ${envConfig.token ? '***configured***' : 'NOT configured'}`);
+      printInfo(`\nToken: ${mcp.token ? '***configured***' : 'NOT configured'}`);
     }
   }
 }

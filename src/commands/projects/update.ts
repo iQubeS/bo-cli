@@ -24,6 +24,9 @@ export default class ProjectsUpdateCommand extends BaseCommand {
     'project-type': Flags.string({ description: 'Project type ID' }),
     activity: Flags.string({ description: 'Project activity' }),
     department: Flags.string({ description: 'Department ID' }),
+    'start-date': Flags.string({ description: 'Project start date (ISO format)' }),
+    'end-date': Flags.string({ description: 'Project end date (ISO format)' }),
+    'internal-responsible': Flags.string({ description: 'Internal responsible email' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -88,6 +91,12 @@ export default class ProjectsUpdateCommand extends BaseCommand {
       if (activity) updateData.projectActivity = activity;
       const department = await promptText('Department ID (leave empty to skip):');
       if (department) updateData.departmentId = department;
+      const startDate = await promptText('Start date (ISO format, leave empty to skip):');
+      if (startDate) updateData.projectStartDate = startDate;
+      const endDate = await promptText('End date (ISO format, leave empty to skip):');
+      if (endDate) updateData.projectEndDate = endDate;
+      const internalResponsible = await promptText('Internal responsible email (leave empty to skip):');
+      if (internalResponsible) updateData.internalResponsibleEmail = internalResponsible;
     } else {
       validateEnum(flags.activity as string | undefined, projectActivity(), 'activity');
 
@@ -96,6 +105,9 @@ export default class ProjectsUpdateCommand extends BaseCommand {
       if (flags['project-type']) updateData.projectTypeId = flags['project-type'];
       if (flags.activity) updateData.projectActivity = flags.activity;
       if (flags.department) updateData.departmentId = flags.department;
+      if (flags['start-date']) updateData.projectStartDate = flags['start-date'];
+      if (flags['end-date']) updateData.projectEndDate = flags['end-date'];
+      if (flags['internal-responsible']) updateData.internalResponsibleEmail = flags['internal-responsible'];
     }
 
     return updateData;

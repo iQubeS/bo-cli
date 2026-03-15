@@ -1,5 +1,6 @@
 import { McpClient, McpServerConfig } from './client.js';
-import type { BoCliConfig } from '../config/index.js';
+import type { BoCliConfig, McpEnvironmentConfig } from '../config/index.js';
+import { isMcpConfig } from '../config/index.js';
 
 export interface ServerConnection {
   name: string;
@@ -28,7 +29,18 @@ export class ConnectionManager {
       throw new Error(`Environment "${this.environment}" not found in config`);
     }
 
-    const serverConfig = envConfig.servers[serverName as keyof typeof envConfig.servers];
+    if (!isMcpConfig(envConfig)) {
+      throw new Error('MCP connection manager cannot be used in REST API mode');
+    }
+
+    // Check for existing connection
+    const existing = this.clients.get(serverName);
+    if (existing?.connected) {
+      return existing;
+    }
+
+    const mcpConfig = envConfig as McpEnvironmentConfig;
+    const serverConfig = mcpConfig.servers[serverName as keyof typeof mcpConfig.servers];
     if (!serverConfig || !serverConfig.url) {
       throw new Error(`Server "${serverName}" not configured`);
     }
@@ -38,7 +50,7 @@ export class ConnectionManager {
     try {
       await client.connect({
         serverUrl: serverConfig.url,
-        token: envConfig.token,
+        token: mcpConfig.token,
       });
 
       let toolCount: number | undefined;

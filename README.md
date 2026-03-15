@@ -2,7 +2,7 @@
 
 Command-line interface for the [Business Online](https://business-online.no) platform.
 
-Communicates with Business Online MCP servers over Streamable HTTP (JSON-RPC 2.0) to manage companies, contacts, leads, projects, NCRs, timelines, and QCPs.
+Communicates with Business Online via MCP servers (JSON-RPC 2.0 over Streamable HTTP) or directly via the REST API to manage companies, contacts, leads, projects, NCRs, timelines, and QCPs.
 
 ## Installation
 
@@ -30,20 +30,33 @@ npm link
 bo config set --interactive
 ```
 
-This prompts for your environment name, Bearer token, and server URLs. Configuration is stored at `~/.bo-cli/config.json`.
+This prompts for your environment name, backend mode (MCP or REST), and credentials.
 
-Alternatively, set environment variables:
+### MCP Mode (default)
+
+Connects to four MCP servers (Customer, Leads, Projects, NCR). Requires a Bearer token and server URLs.
 
 ```bash
 export BO_CLI_ENV=production
 export BO_CLI_TOKEN=your-bearer-token
 ```
 
+### REST API Mode
+
+Connects directly to the Business Online REST API. Requires an API key, tenant name, and API version.
+
+```bash
+export BO_CLI_ENV=production
+export BO_CLI_API_KEY=your-api-key
+```
+
+Configuration is stored at `~/.bo-cli/config.json`.
+
 Verify your setup:
 
 ```bash
-bo status        # Shows connection status for all servers
-bo config test   # Tests connectivity and lists available tools
+bo status        # Shows connection status and mode
+bo config test   # Tests connectivity
 ```
 
 ## Shell Completions
@@ -138,6 +151,18 @@ Module can be `company`, `lead`, or `project`.
 | `bo cache --clear` | Clear expired cache entries |
 | `bo cache --clear --all` | Clear all cache |
 
+### Enum Configuration (REST mode)
+
+In REST API mode, enum values (status options, activity types, etc.) are configured locally rather than loaded from the server.
+
+| Command | Description |
+|---------|-------------|
+| `bo config enums` | Show current enum values |
+| `bo config enums --category leads` | Show enums for a specific category |
+| `bo config enums --set --category leads --field leadsStatus --values "Pending,Active,Won,Lost"` | Set custom enum values |
+| `bo config enums --reset` | Remove custom overrides (use static defaults) |
+| `bo config enums --import --file enums.json` | Import enum values from JSON file |
+
 ## Common Flags
 
 | Flag | Description | Available on |
@@ -151,6 +176,8 @@ Module can be `company`, `lead`, or `project`.
 | `--offset <n>` | Pagination offset | List commands |
 | `--sort <fields>` | Sort (prefix `-` for desc) | List commands |
 | `--search <text>` | Search filter | Some list commands |
+
+Note: `--debug` output may include request/response data. Avoid using in environments where console output is logged or shared.
 
 ## Examples
 
@@ -220,6 +247,27 @@ src/
 ```
 
 The CLI connects to four MCP servers: **Customer** (companies + contacts), **Leads**, **Projects**, and **NCR**. Each command calls `this.withConnection(serverName, fn)` which handles config loading, connection, enum loading, execution, and disconnect.
+
+### Backend Abstraction
+
+The CLI uses a `BackendClient` interface with two implementations:
+- **MCP mode** (`McpBackendClient`): Connects to four MCP servers via Streamable HTTP
+- **REST mode** (`RestBackendClient`): Calls the REST API directly via `HttpClient`
+
+Commands use `this.withConnection(serverName, fn)` which automatically selects the right backend based on configuration. The `OperationRouter` maps MCP tool names to REST API endpoints with parameter name translation.
+
+```
+src/
+  backend/
+    types.ts                # BackendClient interface
+    mcp-factory.ts          # MCP backend factory
+    mcp-backend.ts          # MCP implementation
+    rest-factory.ts         # REST backend factory
+  rest/
+    http-client.ts          # HTTP client with retry, rate limiting, pagination
+    rest-client.ts          # REST implementation of BackendClient
+    operation-router.ts     # Maps MCP operations → REST endpoints
+```
 
 ## License
 

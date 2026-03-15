@@ -22,9 +22,9 @@ export const LeadProbability = [
   '10 %',
   '40 %',
   '60 %',
-  '65%',
-  '80%',
-  '90%',
+  '65 %',
+  '80 %',
+  '90 %',
   '100 %',
 ] as const;
 
@@ -49,7 +49,7 @@ export const NcrType = [
 
 export const NcrDirectCause = [
   'Equipment',
-  'Enviorment',
+  'Environment',
   'Process',
   'Staff',
 ] as const;

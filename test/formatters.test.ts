@@ -141,6 +141,38 @@ describe('formatOutput', () => {
     expect(JSON.parse(result)).toEqual(paginated);
   });
 
+  it('shows pagination hints when next page exists', () => {
+    const paginated = {
+      data: [{ id: 1, name: 'Alice' }],
+      totalCount: 50,
+      pagination: { next: 'https://api.example.com/companies?offset=25', first: 'https://api.example.com/companies?offset=0' },
+    };
+    const result = formatOutput(paginated, { format: 'table' });
+    expect(result).toContain('50');
+    expect(result).toContain('next page');
+  });
+
+  it('shows prev hint when previous page exists', () => {
+    const paginated = {
+      data: [{ id: 2, name: 'Bob' }],
+      totalCount: 50,
+      pagination: { prev: 'https://api.example.com/companies?offset=0', next: 'https://api.example.com/companies?offset=50' },
+    };
+    const result = formatOutput(paginated, { format: 'table' });
+    expect(result).toContain('go back');
+    expect(result).toContain('next page');
+  });
+
+  it('shows no pagination hints when no Link header', () => {
+    const paginated = {
+      data: [{ id: 1, name: 'Alice' }],
+      totalCount: 1,
+    };
+    const result = formatOutput(paginated, { format: 'table' });
+    expect(result).not.toContain('next page');
+    expect(result).not.toContain('go back');
+  });
+
   it('shows "No results found" for empty arrays', () => {
     const result = formatOutput([]);
     expect(result).toContain('No results');
