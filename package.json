@@ -1,6 +1,6 @@
 {
-  "name": "bo-cli",
-  "version": "1.2.0",
+  "name": "businessonline-cli",
+  "version": "1.3.0",
   "description": "Business Online CLI - Command-line interface for Business Online platform",
   "main": "./dist/index.js",
   "type": "module",
@@ -37,6 +37,17 @@
   ],
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iQubeS/bo-cli.git"
+  },
+  "homepage": "https://github.com/iQubeS/bo-cli#readme",
+  "bugs": {
+    "url": "https://github.com/iQubeS/bo-cli/issues"
+  },
   "dependencies": {
     "@inquirer/prompts": "^6.0.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -68,14 +79,30 @@
       "@oclif/plugin-update"
     ],
     "topics": {
-      "companies": { "description": "Manage companies" },
-      "contacts": { "description": "Manage contacts" },
-      "leads": { "description": "Manage leads" },
-      "projects": { "description": "Manage projects" },
-      "ncr": { "description": "Manage NCR cards" },
-      "timeline": { "description": "Manage timeline events" },
-      "qcp": { "description": "Manage QCPs" },
-      "config": { "description": "CLI configuration" }
+      "companies": {
+        "description": "Manage companies"
+      },
+      "contacts": {
+        "description": "Manage contacts"
+      },
+      "leads": {
+        "description": "Manage leads"
+      },
+      "projects": {
+        "description": "Manage projects"
+      },
+      "ncr": {
+        "description": "Manage NCR cards"
+      },
+      "timeline": {
+        "description": "Manage timeline events"
+      },
+      "qcp": {
+        "description": "Manage QCPs"
+      },
+      "config": {
+        "description": "CLI configuration"
+      }
     },
     "autocomplete": {
       "description": "Install autocomplete for bo CLI",
@@ -83,10 +110,7 @@
     },
     "update": {
       "description": "Update bo CLI",
-      "registry": "npm",
-      "s3": {
-        "bucket": "bo-cli-releases"
-      }
+      "registry": "npm"
     }
   }
 }

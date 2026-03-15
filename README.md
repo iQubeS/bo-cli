@@ -8,7 +8,13 @@ Communicates with Business Online via MCP servers (JSON-RPC 2.0 over Streamable 
 
 Requires [Node.js](https://nodejs.org) 18 or later.
 
-**From GitHub (recommended):**
+**From npm (recommended):**
+
+```bash
+npm install -g businessonline-cli
+```
+
+**From GitHub:**
 
 ```bash
 npm install -g github:iQubeS/bo-cli
@@ -22,6 +28,20 @@ cd bo-cli
 npm install
 npm run build
 npm link
+```
+
+## Updating
+
+```bash
+bo update               # Update from npm (recommended)
+bo update --from github # Update from GitHub (latest main branch)
+```
+
+Or manually:
+
+```bash
+npm install -g businessonline-cli    # From npm
+npm install -g github:iQubeS/bo-cli  # From GitHub
 ```
 
 ## Setup
@@ -147,6 +167,7 @@ Module can be `company`, `lead`, or `project`.
 | `bo config show` | Show current configuration |
 | `bo config test` | Test server connectivity |
 | `bo config enums` | Show valid enum values |
+| `bo update` | Update CLI to latest version |
 | `bo cache` | Show cache status |
 | `bo cache --clear` | Clear expired cache entries |
 | `bo cache --clear --all` | Clear all cache |
@@ -176,6 +197,7 @@ In REST API mode, enum values (status options, activity types, etc.) are configu
 | `--offset <n>` | Pagination offset | List commands |
 | `--sort <fields>` | Sort (prefix `-` for desc) | List commands |
 | `--search <text>` | Search filter | Some list commands |
+| `--version` | Show CLI version | All (root command) |
 
 Note: `--debug` output may include request/response data. Avoid using in environments where console output is logged or shared.
 
@@ -235,7 +257,7 @@ src/
     timeline/               # list, get, create, update (cross-module)
     qcp/                    # list, get (cross-module)
     config/                 # set, show, test, enums
-    cache.ts, status.ts
+    cache.ts, status.ts, update.ts
   mcp/
     client.ts               # McpClient wrapping @modelcontextprotocol/sdk
     connection-manager.ts   # Singleton managing 4 server connections
