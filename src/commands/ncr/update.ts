@@ -3,7 +3,7 @@ import { BaseCommand } from '../../base-command.js';
 import { printError, formatOutput, checkResponseError } from '../../formatters/index.js';
 import { promptText, promptSelect, promptConfirm, createSpinner, printPreview, type PreviewData } from '../../utils/interactive.js';
 import { validateEnum } from '../../enums/index.js';
-import { ncrType, ncrDirectCause, ncrCategory, ncrLocation, ncrFeedbackType } from '../../enums/cache.js';
+import { ncrType, ncrDirectCause, ncrCategory, ncrLocation, ncrFeedbackType, ncrRootCause } from '../../enums/cache.js';
 
 export default class NcrUpdateCommand extends BaseCommand {
   static description = 'Update an NCR card';
@@ -27,6 +27,16 @@ export default class NcrUpdateCommand extends BaseCommand {
     category: Flags.string({ description: 'Category' }),
     location: Flags.string({ description: 'Location' }),
     'feedback-type': Flags.string({ description: 'Feedback type' }),
+    'assigned-to': Flags.string({ description: 'Assigned to email' }),
+    'company-id': Flags.string({ description: 'Related company ID' }),
+    'project-id': Flags.string({ description: 'Related project ID' }),
+    'lead-id': Flags.string({ description: 'Related lead ID' }),
+    'department-id': Flags.string({ description: 'Department ID' }),
+    'immediate-actions': Flags.string({ description: 'Immediate actions taken' }),
+    'long-term-proposal': Flags.string({ description: 'Long-term corrective action proposal' }),
+    'root-cause': Flags.string({ description: 'Root cause' }),
+    'purchase-order': Flags.string({ description: 'Purchase order reference' }),
+    'part-no': Flags.string({ description: 'Part number' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -97,12 +107,33 @@ export default class NcrUpdateCommand extends BaseCommand {
       if (location) updateData.location = location;
       const feedbackType = await promptSelect('Feedback type:', ncrFeedbackType());
       if (feedbackType) updateData.feedbackType = feedbackType;
+      const assignedTo = await promptText('Assigned to email (leave empty to skip):');
+      if (assignedTo) updateData.assignedToEmail = assignedTo;
+      const companyId = await promptText('Company ID (leave empty to skip):');
+      if (companyId) updateData.companyId = companyId;
+      const projectId = await promptText('Project ID (leave empty to skip):');
+      if (projectId) updateData.projectId = projectId;
+      const leadId = await promptText('Lead ID (leave empty to skip):');
+      if (leadId) updateData.leadId = leadId;
+      const departmentId = await promptText('Department ID (leave empty to skip):');
+      if (departmentId) updateData.departmentId = departmentId;
+      const immediateActions = await promptText('Immediate actions taken (leave empty to skip):');
+      if (immediateActions) updateData.immediateActions = immediateActions;
+      const longTermProposal = await promptText('Long-term corrective action proposal (leave empty to skip):');
+      if (longTermProposal) updateData.longTermProposal = longTermProposal;
+      const rootCause = await promptSelect('Root cause:', ncrRootCause());
+      if (rootCause) updateData.rootCause = rootCause;
+      const purchaseOrder = await promptText('Purchase order reference (leave empty to skip):');
+      if (purchaseOrder) updateData.purchaseOrder = purchaseOrder;
+      const partNo = await promptText('Part number (leave empty to skip):');
+      if (partNo) updateData.partNo = partNo;
     } else {
       validateEnum(flags.type as string | undefined, ncrType(), 'type');
       validateEnum(flags['direct-cause'] as string | undefined, ncrDirectCause(), 'direct cause');
       validateEnum(flags.category as string | undefined, ncrCategory(), 'category');
       validateEnum(flags.location as string | undefined, ncrLocation(), 'location');
       validateEnum(flags['feedback-type'] as string | undefined, ncrFeedbackType(), 'feedback type');
+      validateEnum(flags['root-cause'] as string | undefined, ncrRootCause(), 'root cause');
 
       if (flags.title) updateData.title = flags.title;
       if (flags.description) updateData.description = flags.description;
@@ -112,6 +143,16 @@ export default class NcrUpdateCommand extends BaseCommand {
       if (flags.category) updateData.category = flags.category;
       if (flags.location) updateData.location = flags.location;
       if (flags['feedback-type']) updateData.feedbackType = flags['feedback-type'];
+      if (flags['assigned-to']) updateData.assignedToEmail = flags['assigned-to'];
+      if (flags['company-id']) updateData.companyId = flags['company-id'];
+      if (flags['project-id']) updateData.projectId = flags['project-id'];
+      if (flags['lead-id']) updateData.leadId = flags['lead-id'];
+      if (flags['department-id']) updateData.departmentId = flags['department-id'];
+      if (flags['immediate-actions']) updateData.immediateActions = flags['immediate-actions'];
+      if (flags['long-term-proposal']) updateData.longTermProposal = flags['long-term-proposal'];
+      if (flags['root-cause']) updateData.rootCause = flags['root-cause'];
+      if (flags['purchase-order']) updateData.purchaseOrder = flags['purchase-order'];
+      if (flags['part-no']) updateData.partNo = flags['part-no'];
     }
 
     return updateData;

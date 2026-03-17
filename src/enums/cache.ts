@@ -69,6 +69,10 @@ export function supplierCategory(): readonly string[] {
   return cached?.Company?.companySupplierCategory ?? staticEnums.SupplierCategory;
 }
 
+export function approvedSupplier(): readonly string[] {
+  return cached?.Company?.companyApprovedSupplier ?? staticEnums.ApprovedSupplier;
+}
+
 export function ncrType(): readonly string[] {
   return cached?.NCR?.ncrTypeRegistration ?? staticEnums.NcrType;
 }

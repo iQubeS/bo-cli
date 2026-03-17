@@ -1,5 +1,5 @@
 import { Command } from '@oclif/core';
-import { loadConfig, getConfigPath, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../../config/index.js';
+import { loadConfig, getConfigPath, getActiveEnvironment, getEnvironmentMode, isRestConfig, DEFAULT_REST_BASE_URL } from '../../config/index.js';
 import type { McpEnvironmentConfig, RestEnvironmentConfig } from '../../config/index.js';
 import { printInfo } from '../../formatters/index.js';
 
@@ -28,7 +28,7 @@ export default class ConfigShowCommand extends Command {
 
     if (isRestConfig(envConfig)) {
       const rest = envConfig as RestEnvironmentConfig;
-      printInfo(`Base URL: ${rest.baseUrl}`);
+      printInfo(`Base URL: ${rest.baseUrl ?? DEFAULT_REST_BASE_URL}`);
       printInfo(`Tenant: ${rest.tenantName}`);
       printInfo(`API version: ${rest.apiVersion || 'v1'}`);
       printInfo(`API key: ${rest.apiKey ? '***configured***' : 'NOT configured'}`);

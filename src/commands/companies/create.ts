@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core';
 import { BaseCommand } from '../../base-command.js';
 import { printError, formatOutput, checkResponseError } from '../../formatters/index.js';
 import { promptText, promptConfirm, promptSelect, createSpinner, printPreview, type PreviewData } from '../../utils/interactive.js';
-import { contactLegalBasis } from '../../enums/cache.js';
+import { contactLegalBasis, supplierCategory, approvedSupplier } from '../../enums/cache.js';
 
 export default class CompaniesCreateCommand extends BaseCommand {
   static description = 'Create a new company';
@@ -21,6 +21,9 @@ export default class CompaniesCreateCommand extends BaseCommand {
     website: Flags.string({ description: 'Company website' }),
     'org-number': Flags.string({ description: 'Organization number' }),
     'internal-responsible': Flags.string({ description: 'Internal responsible email' }),
+    'postal-address': Flags.string({ description: 'Postal address' }),
+    'supplier-category': Flags.string({ description: 'Supplier category' }),
+    'approved-supplier': Flags.string({ description: 'Approved supplier' }),
     'contact-name': Flags.string({ description: 'Main contact name' }),
     'contact-email': Flags.string({ description: 'Main contact email' }),
     'contact-phone': Flags.string({ description: 'Main contact phone' }),
@@ -89,6 +92,12 @@ export default class CompaniesCreateCommand extends BaseCommand {
       if (orgNumber) fields.orgNumber = orgNumber;
       const responsible = await promptText('Internal responsible email (optional):');
       if (responsible) fields.internalResponsibleEmail = responsible;
+      const postalAddress = await promptText('Postal address (optional):');
+      if (postalAddress) fields.postalAddress = postalAddress;
+      const supCategory = await promptSelect('Supplier category (optional):', ['', ...supplierCategory()]);
+      if (supCategory) fields.companySupplierCategory = supCategory;
+      const approved = await promptSelect('Approved supplier (optional):', ['', ...approvedSupplier()]);
+      if (approved) fields.companyApprovedSupplier = approved;
 
       // Main contact (required by server)
       console.log('\nMain contact details:');
@@ -138,6 +147,9 @@ export default class CompaniesCreateCommand extends BaseCommand {
     if (flags.website) fields.website = flags.website;
     if (flags['org-number']) fields.orgNumber = flags['org-number'];
     if (flags['internal-responsible']) fields.internalResponsibleEmail = flags['internal-responsible'];
+    if (flags['postal-address']) fields.postalAddress = flags['postal-address'];
+    if (flags['supplier-category']) fields.companySupplierCategory = flags['supplier-category'];
+    if (flags['approved-supplier']) fields.companyApprovedSupplier = flags['approved-supplier'];
     return fields;
   }
 }

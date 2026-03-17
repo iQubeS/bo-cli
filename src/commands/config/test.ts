@@ -1,5 +1,5 @@
 import { Command } from '@oclif/core';
-import { loadConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../../config/index.js';
+import { loadConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig, DEFAULT_REST_BASE_URL } from '../../config/index.js';
 import type { RestEnvironmentConfig } from '../../config/index.js';
 import { connectionManager } from '../../mcp/connection-manager.js';
 import { HttpClient } from '../../rest/http-client.js';
@@ -35,7 +35,7 @@ export default class ConfigTestCommand extends Command {
     }
 
     const httpClient = new HttpClient({
-      baseUrl: envConfig.baseUrl,
+      baseUrl: envConfig.baseUrl ?? DEFAULT_REST_BASE_URL,
       tenantName: envConfig.tenantName,
       apiVersion: envConfig.apiVersion ?? 'v1',
       apiKey,
@@ -46,7 +46,7 @@ export default class ConfigTestCommand extends Command {
       const response = await httpClient.get('/companytypes');
       const typeCount = Array.isArray(response.data) ? response.data.length : 0;
       printSuccess(`REST API: Connected (${typeCount} company types found)`);
-      printInfo(`  Base URL: ${envConfig.baseUrl}`);
+      printInfo(`  Base URL: ${envConfig.baseUrl ?? DEFAULT_REST_BASE_URL}`);
       printInfo(`  Tenant: ${envConfig.tenantName}`);
       printInfo(`  API version: ${envConfig.apiVersion || 'v1'}`);
     } catch (error) {

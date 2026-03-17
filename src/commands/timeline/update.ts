@@ -24,6 +24,9 @@ export default class TimelineUpdateCommand extends BaseCommand {
     'log-type': Flags.string({ description: 'Log type (required)' }),
     description: Flags.string({ description: 'Description' }),
     date: Flags.string({ description: 'Event date (ISO format, defaults to now)' }),
+    'assigned-to': Flags.string({ description: 'Assigned to email' }),
+    'start-date': Flags.string({ description: 'Start date (ISO format)' }),
+    'due-date': Flags.string({ description: 'Due date (ISO format)' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -108,6 +111,12 @@ export default class TimelineUpdateCommand extends BaseCommand {
 
       const date = await promptText('Event date (leave empty for now):');
       updateData.date = date || new Date().toISOString();
+      const assignedTo = await promptText('Assigned to email (leave empty to skip):');
+      if (assignedTo) updateData.assignedTo = assignedTo;
+      const startDate = await promptText('Start date (leave empty to skip, ISO format):');
+      if (startDate) updateData.startDate = startDate;
+      const dueDate = await promptText('Due date (leave empty to skip, ISO format):');
+      if (dueDate) updateData.dueDate = dueDate;
     } else {
       if (!flags.name) {
         printError('--name is required for timeline updates (server requires full replacement).');
@@ -124,6 +133,9 @@ export default class TimelineUpdateCommand extends BaseCommand {
       updateData.logType = flags['log-type'];
       if (flags.description) updateData.description = flags.description;
       updateData.date = (flags.date as string) || new Date().toISOString();
+      if (flags['assigned-to']) updateData.assignedTo = flags['assigned-to'];
+      if (flags['start-date']) updateData.startDate = flags['start-date'];
+      if (flags['due-date']) updateData.dueDate = flags['due-date'];
     }
 
     return updateData;

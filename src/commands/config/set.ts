@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core';
 import { input, password, select } from '@inquirer/prompts';
-import { loadConfig, saveConfig, getConfigPath, type BoCliConfig, type McpEnvironmentConfig, type RestEnvironmentConfig } from '../../config/index.js';
+import { loadConfig, saveConfig, getConfigPath, DEFAULT_REST_BASE_URL, type BoCliConfig, type McpEnvironmentConfig, type RestEnvironmentConfig } from '../../config/index.js';
 import { printSuccess, printInfo, printWarning } from '../../formatters/index.js';
 
 export default class ConfigSetCommand extends Command {
@@ -105,8 +105,8 @@ export default class ConfigSetCommand extends Command {
     }
 
     const baseUrl = await input({
-      message: 'API base URL:',
-      default: existingRest?.baseUrl || 'https://bo-api.azure-api.net',
+      message: `API base URL (default: ${DEFAULT_REST_BASE_URL}):`,
+      default: existingRest?.baseUrl ?? DEFAULT_REST_BASE_URL,
     });
 
     const tenantName = await input({
@@ -125,9 +125,10 @@ export default class ConfigSetCommand extends Command {
       mask: true,
     });
 
+    const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
     const restConfig: RestEnvironmentConfig = {
       mode: 'rest',
-      baseUrl: baseUrl.replace(/\/+$/, ''),
+      ...(cleanBaseUrl !== DEFAULT_REST_BASE_URL ? { baseUrl: cleanBaseUrl } : {}),
       tenantName: tenantName.trim(),
       apiVersion,
       apiKey,

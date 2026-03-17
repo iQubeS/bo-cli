@@ -27,7 +27,10 @@ export default class LeadsUpdateCommand extends BaseCommand {
     description: Flags.string({ description: 'Lead description' }),
     'contract-value': Flags.string({ description: 'Contract value' }),
     'expected-close-date': Flags.string({ description: 'Expected close date (ISO format)' }),
+    'next-follow-up-date': Flags.string({ description: 'Next follow-up date (ISO format)' }),
+    'company-id': Flags.string({ description: 'Company ID' }),
     'internal-responsible': Flags.string({ description: 'Internal responsible email' }),
+    'leads-main-contact': Flags.string({ description: 'Main contact ID' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -102,8 +105,14 @@ export default class LeadsUpdateCommand extends BaseCommand {
       }
       const expectedCloseDate = await promptText('Expected close date (ISO format, leave empty to skip):');
       if (expectedCloseDate) updateData.expectedCloseDate = expectedCloseDate;
+      const nextFollowUpDate = await promptText('Next follow-up date (ISO format, leave empty to skip):');
+      if (nextFollowUpDate) updateData.nextFollowUpDate = nextFollowUpDate;
+      const companyId = await promptText('Company ID (leave empty to skip):');
+      if (companyId) updateData.companyId = companyId;
       const internalResponsible = await promptText('Internal responsible email (leave empty to skip):');
       if (internalResponsible) updateData.internalResponsibleEmail = internalResponsible;
+      const mainContact = await promptText('Main contact ID (leave empty to skip):');
+      if (mainContact) updateData.leadsMainContact = mainContact;
     } else {
       validateEnum(flags.status as string | undefined, leadsStatus(), 'status');
       validateEnum(flags.probability as string | undefined, leadsProbability(), 'probability');
@@ -121,7 +130,10 @@ export default class LeadsUpdateCommand extends BaseCommand {
         updateData.contractValue = cv;
       }
       if (flags['expected-close-date']) updateData.expectedCloseDate = flags['expected-close-date'];
+      if (flags['next-follow-up-date']) updateData.nextFollowUpDate = flags['next-follow-up-date'];
+      if (flags['company-id']) updateData.companyId = flags['company-id'];
       if (flags['internal-responsible']) updateData.internalResponsibleEmail = flags['internal-responsible'];
+      if (flags['leads-main-contact']) updateData.leadsMainContact = flags['leads-main-contact'];
     }
 
     return updateData;

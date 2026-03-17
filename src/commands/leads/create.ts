@@ -23,7 +23,9 @@ export default class LeadsCreateCommand extends BaseCommand {
     'lcm-status': Flags.string({ description: 'LCM status' }),
     'contract-value': Flags.string({ description: 'Contract value' }),
     'expected-close-date': Flags.string({ description: 'Expected close date (ISO format)' }),
+    'next-follow-up-date': Flags.string({ description: 'Next follow-up date (ISO format)' }),
     'internal-responsible': Flags.string({ description: 'Internal responsible email' }),
+    'leads-main-contact': Flags.string({ description: 'Main contact ID' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be created without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -89,8 +91,12 @@ export default class LeadsCreateCommand extends BaseCommand {
         if (Number.isNaN(cv)) throw new Error('Invalid contract value: must be a number');
         fields.contractValue = cv;
       }
+      const nextFollowUpDate = await promptText('Next follow-up date (ISO format, optional):');
+      if (nextFollowUpDate) fields.nextFollowUpDate = nextFollowUpDate;
       const responsible = await promptText('Internal responsible email (optional):');
       if (responsible) fields.internalResponsibleEmail = responsible;
+      const mainContact = await promptText('Main contact ID (optional):');
+      if (mainContact) fields.leadsMainContact = mainContact;
       return fields;
     }
 
@@ -118,7 +124,9 @@ export default class LeadsCreateCommand extends BaseCommand {
       fields.contractValue = cv;
     }
     if (flags['expected-close-date']) fields.expectedCloseDate = flags['expected-close-date'];
+    if (flags['next-follow-up-date']) fields.nextFollowUpDate = flags['next-follow-up-date'];
     if (flags['internal-responsible']) fields.internalResponsibleEmail = flags['internal-responsible'];
+    if (flags['leads-main-contact']) fields.leadsMainContact = flags['leads-main-contact'];
     return fields;
   }
 }

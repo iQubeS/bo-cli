@@ -23,6 +23,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
     activity: Flags.string({ description: 'Project activity' }),
     'start-date': Flags.string({ description: 'Project start date (ISO format)' }),
     'end-date': Flags.string({ description: 'Project end date (ISO format)' }),
+    'connect-to': Flags.string({ description: 'Connect to entity ID' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be created without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -84,6 +85,8 @@ export default class ProjectsCreateCommand extends BaseCommand {
       if (startDate) fields.projectStartDate = startDate;
       const endDate = await promptText('End date (optional, ISO format):');
       if (endDate) fields.projectEndDate = endDate;
+      const connectTo = await promptText('Connect to entity ID (optional):');
+      if (connectTo) fields.connectTo = connectTo;
       return fields;
     }
 
@@ -105,6 +108,7 @@ export default class ProjectsCreateCommand extends BaseCommand {
     if (flags.activity) fields.projectActivity = flags.activity;
     if (flags['start-date']) fields.projectStartDate = flags['start-date'];
     if (flags['end-date']) fields.projectEndDate = flags['end-date'];
+    if (flags['connect-to']) fields.connectTo = flags['connect-to'];
     return fields;
   }
 }

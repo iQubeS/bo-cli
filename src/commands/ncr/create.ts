@@ -3,7 +3,7 @@ import { BaseCommand } from '../../base-command.js';
 import { printError, formatOutput, checkResponseError } from '../../formatters/index.js';
 import { promptText, promptSelect, promptConfirm, createSpinner, printPreview, type PreviewData } from '../../utils/interactive.js';
 import { validateEnum } from '../../enums/index.js';
-import { ncrType, ncrDirectCause, ncrCategory, ncrLocation, ncrFeedbackType } from '../../enums/cache.js';
+import { ncrType, ncrDirectCause, ncrCategory, ncrLocation, ncrFeedbackType, ncrRootCause } from '../../enums/cache.js';
 
 export default class NcrCreateCommand extends BaseCommand {
   static description = 'Create a new NCR card';
@@ -26,6 +26,11 @@ export default class NcrCreateCommand extends BaseCommand {
     'lead-id': Flags.string({ description: 'Related lead ID' }),
     'department-id': Flags.string({ description: 'Department ID' }),
     'assigned-to': Flags.string({ description: 'Assigned to email' }),
+    'immediate-actions': Flags.string({ description: 'Immediate actions taken' }),
+    'long-term-proposal': Flags.string({ description: 'Long-term corrective action proposal' }),
+    'root-cause': Flags.string({ description: 'Root cause' }),
+    'purchase-order': Flags.string({ description: 'Purchase order reference' }),
+    'part-no': Flags.string({ description: 'Part number' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be created without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -96,6 +101,16 @@ export default class NcrCreateCommand extends BaseCommand {
       if (departmentId) fields.departmentId = departmentId;
       const assignedTo = await promptText('Assigned to email (optional):');
       if (assignedTo) fields.assignedToEmail = assignedTo;
+      const immediateActions = await promptText('Immediate actions taken (optional):');
+      if (immediateActions) fields.immediateActions = immediateActions;
+      const longTermProposal = await promptText('Long-term corrective action proposal (optional):');
+      if (longTermProposal) fields.longTermProposal = longTermProposal;
+      const rootCause = await promptSelect('Root cause:', ncrRootCause());
+      if (rootCause) fields.rootCause = rootCause;
+      const purchaseOrder = await promptText('Purchase order reference (optional):');
+      if (purchaseOrder) fields.purchaseOrder = purchaseOrder;
+      const partNo = await promptText('Part number (optional):');
+      if (partNo) fields.partNo = partNo;
       return fields;
     }
 
@@ -109,6 +124,7 @@ export default class NcrCreateCommand extends BaseCommand {
     validateEnum(flags.category as string | undefined, ncrCategory(), 'category');
     validateEnum(flags.location as string | undefined, ncrLocation(), 'location');
     validateEnum(flags['feedback-type'] as string | undefined, ncrFeedbackType(), 'feedback type');
+    validateEnum(flags['root-cause'] as string | undefined, ncrRootCause(), 'root cause');
 
     const fields: Record<string, unknown> = {
       title: flags.title,
@@ -124,6 +140,11 @@ export default class NcrCreateCommand extends BaseCommand {
     if (flags['lead-id']) fields.leadId = flags['lead-id'];
     if (flags['department-id']) fields.departmentId = flags['department-id'];
     if (flags['assigned-to']) fields.assignedToEmail = flags['assigned-to'];
+    if (flags['immediate-actions']) fields.immediateActions = flags['immediate-actions'];
+    if (flags['long-term-proposal']) fields.longTermProposal = flags['long-term-proposal'];
+    if (flags['root-cause']) fields.rootCause = flags['root-cause'];
+    if (flags['purchase-order']) fields.purchaseOrder = flags['purchase-order'];
+    if (flags['part-no']) fields.partNo = flags['part-no'];
     return fields;
   }
 }

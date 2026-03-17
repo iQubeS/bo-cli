@@ -107,6 +107,11 @@ export const SupplierCategory = [
   'C - Other',
 ] as const;
 
+export const ApprovedSupplier = [
+  'true',
+  'false',
+] as const;
+
 // Timeline enum values
 export const LogType = [
   'Relations',

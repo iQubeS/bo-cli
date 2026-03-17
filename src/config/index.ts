@@ -22,9 +22,11 @@ export interface McpEnvironmentConfig {
 
 // ── REST API environment config (new) ────────────────────────────────
 
+export const DEFAULT_REST_BASE_URL = 'https://bo-api.azure-api.net';
+
 export interface RestEnvironmentConfig {
   mode: 'rest';
-  baseUrl: string;
+  baseUrl?: string;
   tenantName: string;
   apiVersion?: string;
   apiKey?: string;

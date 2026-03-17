@@ -24,7 +24,9 @@ export default class ContactsUpdateCommand extends BaseCommand {
     phone: Flags.string({ description: 'Phone number' }),
     role: Flags.string({ description: 'Job title' }),
     'legal-basis': Flags.string({ description: 'Legal basis for processing' }),
+    'company-id': Flags.string({ description: 'Company ID' }),
     status: Flags.string({ description: 'Contact status' }),
+    'marketing-consent': Flags.boolean({ description: 'Marketing consent', allowNo: true }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -87,20 +89,26 @@ export default class ContactsUpdateCommand extends BaseCommand {
       if (phone) updateData.cellPhone = phone;
       const role = await promptText('Job title (leave empty to skip):');
       if (role) updateData.jobTitle = role;
+      const companyId = await promptText('Company ID (leave empty to skip):');
+      if (companyId) updateData.companyId = companyId;
       const legalBasis = await promptSelect('Legal basis:', contactLegalBasis());
       if (legalBasis) updateData.contactLegalBasis = legalBasis;
       const status = await promptSelect('Status:', contactStatus());
       if (status) updateData.contactStatus = status;
+      const marketingConsent = await promptConfirm('Marketing consent?', false);
+      updateData.contactMarketingConsent = marketingConsent;
     } else {
       validateEnum(flags['legal-basis'] as string | undefined, contactLegalBasis(), 'legal basis');
       validateEnum(flags.status as string | undefined, contactStatus(), 'status');
 
       if (flags.name) updateData.contactName = flags.name;
+      if (flags['company-id']) updateData.companyId = flags['company-id'];
       if (flags.email) updateData.email = flags.email;
       if (flags.phone) updateData.cellPhone = flags.phone;
       if (flags.role) updateData.jobTitle = flags.role;
       if (flags['legal-basis']) updateData.contactLegalBasis = flags['legal-basis'];
       if (flags.status) updateData.contactStatus = flags.status;
+      if (flags['marketing-consent'] !== undefined) updateData.contactMarketingConsent = flags['marketing-consent'];
     }
 
     return updateData;

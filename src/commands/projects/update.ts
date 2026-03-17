@@ -27,6 +27,8 @@ export default class ProjectsUpdateCommand extends BaseCommand {
     'start-date': Flags.string({ description: 'Project start date (ISO format)' }),
     'end-date': Flags.string({ description: 'Project end date (ISO format)' }),
     'internal-responsible': Flags.string({ description: 'Internal responsible email' }),
+    'company-id': Flags.string({ description: 'Company ID' }),
+    'connect-to': Flags.string({ description: 'Connect to entity ID' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be updated without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -97,6 +99,10 @@ export default class ProjectsUpdateCommand extends BaseCommand {
       if (endDate) updateData.projectEndDate = endDate;
       const internalResponsible = await promptText('Internal responsible email (leave empty to skip):');
       if (internalResponsible) updateData.internalResponsibleEmail = internalResponsible;
+      const companyId = await promptText('Company ID (leave empty to skip):');
+      if (companyId) updateData.companyId = companyId;
+      const connectTo = await promptText('Connect to entity ID (leave empty to skip):');
+      if (connectTo) updateData.connectTo = connectTo;
     } else {
       validateEnum(flags.activity as string | undefined, projectActivity(), 'activity');
 
@@ -108,6 +114,8 @@ export default class ProjectsUpdateCommand extends BaseCommand {
       if (flags['start-date']) updateData.projectStartDate = flags['start-date'];
       if (flags['end-date']) updateData.projectEndDate = flags['end-date'];
       if (flags['internal-responsible']) updateData.internalResponsibleEmail = flags['internal-responsible'];
+      if (flags['company-id']) updateData.companyId = flags['company-id'];
+      if (flags['connect-to']) updateData.connectTo = flags['connect-to'];
     }
 
     return updateData;

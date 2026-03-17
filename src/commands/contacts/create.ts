@@ -22,6 +22,7 @@ export default class ContactsCreateCommand extends BaseCommand {
     'job-title': Flags.string({ description: 'Job title' }),
     'legal-basis': Flags.string({ description: 'Legal basis for processing' }),
     status: Flags.string({ description: 'Contact status' }),
+    'marketing-consent': Flags.boolean({ description: 'Marketing consent', allowNo: true }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be created without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -81,6 +82,8 @@ export default class ContactsCreateCommand extends BaseCommand {
       if (phone) fields.cellPhone = phone;
       const jobTitle = await promptText('Job title (optional):');
       if (jobTitle) fields.jobTitle = jobTitle;
+      const marketingConsent = await promptConfirm('Marketing consent?', false);
+      fields.contactMarketingConsent = marketingConsent;
       return fields;
     }
 
@@ -101,6 +104,7 @@ export default class ContactsCreateCommand extends BaseCommand {
     if (flags.email) fields.email = flags.email;
     if (flags.phone) fields.cellPhone = flags.phone;
     if (flags['job-title']) fields.jobTitle = flags['job-title'];
+    if (flags['marketing-consent'] !== undefined) fields.contactMarketingConsent = flags['marketing-consent'];
     return fields;
   }
 }

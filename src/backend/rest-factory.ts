@@ -1,4 +1,4 @@
-import type { RestEnvironmentConfig } from '../config/index.js';
+import { DEFAULT_REST_BASE_URL, type RestEnvironmentConfig } from '../config/index.js';
 import { RestBackendClient } from '../rest/rest-client.js';
 import type { BackendClient, BackendFactory } from './types.js';
 
@@ -13,7 +13,7 @@ export class RestBackendFactory implements BackendFactory {
       throw new Error('API key is not configured. Run: bo config set --interactive');
     }
     return new RestBackendClient({
-      baseUrl: this.config.baseUrl,
+      baseUrl: this.config.baseUrl ?? DEFAULT_REST_BASE_URL,
       tenantName: this.config.tenantName,
       apiVersion: this.config.apiVersion ?? 'v1',
       apiKey,

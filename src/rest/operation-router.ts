@@ -27,13 +27,13 @@ const ROUTES: Record<string, RouteDefinition> = {
   create_company: {
     method: 'POST',
     path: '/companies',
-    paramMapping: { companyName: 'name' },
+    paramMapping: { companyName: 'name', companySupplierCategory: 'supplierCategory', companyApprovedSupplier: 'approvedSupplier' },
   },
   update_company: {
     method: 'PUT',
     path: '/companies/:companyId',
     pathParams: ['companyId'],
-    paramMapping: { companyName: 'name' },
+    paramMapping: { companyName: 'name', companySupplierCategory: 'supplierCategory', companyApprovedSupplier: 'approvedSupplier' },
   },
   get_all_company_types: {
     method: 'GET',
@@ -77,13 +77,13 @@ const ROUTES: Record<string, RouteDefinition> = {
   create_contact: {
     method: 'POST',
     path: '/contacts',
-    paramMapping: { contactName: 'name', contactLegalBasis: 'legalBasis', contactStatus: 'status' },
+    paramMapping: { contactName: 'name', contactLegalBasis: 'legalBasis', contactStatus: 'status', contactMarketingConsent: 'marketingConsent' },
   },
   update_contact: {
     method: 'PUT',
     path: '/contacts/:contactId',
     pathParams: ['contactId'],
-    paramMapping: { contactName: 'name', contactLegalBasis: 'legalBasis', contactStatus: 'status' },
+    paramMapping: { contactName: 'name', contactLegalBasis: 'legalBasis', contactStatus: 'status', contactMarketingConsent: 'marketingConsent' },
   },
 
   // ── Leads ──────────────────────────────────────────────────
@@ -188,11 +188,13 @@ const ROUTES: Record<string, RouteDefinition> = {
   create_ncr_card: {
     method: 'POST',
     path: '/ncrcard',
+    paramMapping: { assignedToEmail: 'assignedTo' },
   },
   update_specific_ncr_card: {
     method: 'PUT',
     path: '/ncrcard/:ncrCardId',
     pathParams: ['ncrCardId'],
+    paramMapping: { assignedToEmail: 'assignedTo' },
   },
 
   // ── Company Timeline ───────────────────────────────────────

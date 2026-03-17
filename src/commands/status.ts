@@ -1,5 +1,5 @@
 import { BaseCommand } from '../base-command.js';
-import { loadConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../config/index.js';
+import { loadConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig, DEFAULT_REST_BASE_URL } from '../config/index.js';
 import type { McpEnvironmentConfig, RestEnvironmentConfig } from '../config/index.js';
 import { connectionManager } from '../mcp/connection-manager.js';
 import { HttpClient } from '../rest/http-client.js';
@@ -31,7 +31,7 @@ export default class StatusCommand extends BaseCommand {
 
     if (apiKey) {
       const httpClient = new HttpClient({
-        baseUrl: envConfig.baseUrl,
+        baseUrl: envConfig.baseUrl ?? DEFAULT_REST_BASE_URL,
         tenantName: envConfig.tenantName,
         apiVersion: envConfig.apiVersion ?? 'v1',
         apiKey,
@@ -55,7 +55,7 @@ export default class StatusCommand extends BaseCommand {
       mode: 'rest',
       rest: {
         connected,
-        baseUrl: envConfig.baseUrl,
+        baseUrl: envConfig.baseUrl ?? DEFAULT_REST_BASE_URL,
         tenantName: envConfig.tenantName,
         apiVersion: envConfig.apiVersion ?? 'v1',
         enumCategories,

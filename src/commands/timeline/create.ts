@@ -23,6 +23,9 @@ export default class TimelineCreateCommand extends BaseCommand {
     'log-type': Flags.string({ description: 'Log type' }),
     description: Flags.string({ description: 'Description' }),
     date: Flags.string({ description: 'Event date (ISO format, e.g. 2025-01-15T10:00:00Z)' }),
+    'assigned-to': Flags.string({ description: 'Assigned to email' }),
+    'start-date': Flags.string({ description: 'Start date (ISO format)' }),
+    'due-date': Flags.string({ description: 'Due date (ISO format)' }),
     interactive: Flags.boolean({ description: 'Run in interactive mode with prompts', default: false }),
     preview: Flags.boolean({ description: 'Show what would be created without executing', default: false }),
     json: Flags.boolean({ description: 'Output as JSON' }),
@@ -86,6 +89,12 @@ export default class TimelineCreateCommand extends BaseCommand {
       if (description) fields.description = description;
       const date = await promptText('Date (optional, ISO format):');
       fields.date = date || new Date().toISOString();
+      const assignedTo = await promptText('Assigned to email (optional):');
+      if (assignedTo) fields.assignedTo = assignedTo;
+      const startDate = await promptText('Start date (optional, ISO format):');
+      if (startDate) fields.startDate = startDate;
+      const dueDate = await promptText('Due date (optional, ISO format):');
+      if (dueDate) fields.dueDate = dueDate;
       return fields;
     }
 
@@ -103,6 +112,9 @@ export default class TimelineCreateCommand extends BaseCommand {
       date: (flags.date as string) || new Date().toISOString(),
     };
     if (flags.description) result.description = flags.description;
+    if (flags['assigned-to']) result.assignedTo = flags['assigned-to'];
+    if (flags['start-date']) result.startDate = flags['start-date'];
+    if (flags['due-date']) result.dueDate = flags['due-date'];
     return result;
   }
 }
