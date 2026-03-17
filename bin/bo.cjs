@@ -11,7 +11,8 @@ const child = spawn(process.execPath, [runScript, ...process.argv.slice(2)], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    OCLIF_SKIP_BINARY_CHECK: '1'
+    OCLIF_SKIP_BINARY_CHECK: '1',
+    BO_CLI_ORIGINAL_CWD: process.cwd()
   }
 });
 

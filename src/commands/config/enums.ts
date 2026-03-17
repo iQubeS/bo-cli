@@ -1,5 +1,6 @@
 import { Flags } from '@oclif/core';
 import { readFileSync, writeFileSync } from 'fs';
+import { resolve, isAbsolute } from 'path';
 import { BaseCommand } from '../../base-command.js';
 import { loadConfig, saveConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../../config/index.js';
 import type { RestEnvironmentConfig, EnumCategoryConfig } from '../../config/index.js';
@@ -278,8 +279,9 @@ export default class ConfigEnumsCommand extends BaseCommand {
 
         if (flags.file) {
           try {
-            writeFileSync(flags.file, json, 'utf-8');
-            printSuccess(`Enums exported for tenant "${rest.tenantName}" to ${flags.file}`);
+            const filePath = this.resolveFilePath(flags.file);
+            writeFileSync(filePath, json, 'utf-8');
+            printSuccess(`Enums exported for tenant "${rest.tenantName}" to ${filePath}`);
           } catch (error) {
             printError(`Failed to write file: ${error instanceof Error ? error.message : String(error)}`);
             this.exit(1);
@@ -312,7 +314,8 @@ export default class ConfigEnumsCommand extends BaseCommand {
     }
 
     try {
-      const content = readFileSync(flags.file, 'utf-8');
+      const filePath = this.resolveFilePath(flags.file);
+      const content = readFileSync(filePath, 'utf-8');
       const enumData = JSON.parse(content) as EnumCategoryConfig;
 
       const rest = envConfig as RestEnvironmentConfig;
@@ -320,10 +323,17 @@ export default class ConfigEnumsCommand extends BaseCommand {
       config.enums[rest.tenantName] = enumData;
 
       saveConfig(config);
-      printSuccess(`Enums imported for tenant "${rest.tenantName}" from ${flags.file}`);
+      printSuccess(`Enums imported for tenant "${rest.tenantName}" from ${filePath}`);
     } catch (error) {
       printError(`Failed to import enums: ${error instanceof Error ? error.message : String(error)}`);
       this.exit(1);
     }
+  }
+
+  /** Resolve a file path relative to the user's original working directory. */
+  private resolveFilePath(filePath: string): string {
+    if (isAbsolute(filePath)) return filePath;
+    const originalCwd = process.env.BO_CLI_ORIGINAL_CWD;
+    return originalCwd ? resolve(originalCwd, filePath) : resolve(filePath);
   }
 }
