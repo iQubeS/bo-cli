@@ -1,5 +1,5 @@
 import { Flags } from '@oclif/core';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { BaseCommand } from '../../base-command.js';
 import { loadConfig, saveConfig, getActiveEnvironment, getEnvironmentMode, isRestConfig } from '../../config/index.js';
 import type { RestEnvironmentConfig, EnumCategoryConfig } from '../../config/index.js';
@@ -31,6 +31,8 @@ export default class ConfigEnumsCommand extends BaseCommand {
     '$ bo config enums --set --category leads --field leadsStatus --values "Pending,Active,Won,Lost"',
     '$ bo config enums --reset',
     '$ bo config enums --import --file enums.json',
+    '$ bo config enums --export --file enums.json',
+    '$ bo config enums --export',
   ];
 
   static flags = {
@@ -57,9 +59,12 @@ export default class ConfigEnumsCommand extends BaseCommand {
       description: 'Import enums from a JSON file (REST mode only)',
       default: false,
     }),
+    export: Flags.boolean({
+      description: 'Export current enums to a JSON file or stdout (REST mode only)',
+      default: false,
+    }),
     file: Flags.string({
-      description: 'Path to JSON file (used with --import)',
-      dependsOn: ['import'],
+      description: 'Path to JSON file (used with --import or --export)',
     }),
   };
 
@@ -76,6 +81,10 @@ export default class ConfigEnumsCommand extends BaseCommand {
 
     if (flags.import) {
       return this.handleImport(flags);
+    }
+
+    if (flags.export) {
+      return this.handleExport(flags);
     }
 
     // Default: display enums
@@ -219,6 +228,69 @@ export default class ConfigEnumsCommand extends BaseCommand {
       printSuccess(`Custom enum overrides removed for tenant "${rest.tenantName}". Static defaults will be used.`);
     } else {
       printInfo(`No custom enums found for tenant "${rest.tenantName}".`);
+    }
+  }
+
+  private async handleExport(flags: { file?: string }): Promise<void> {
+    const config = await loadConfig();
+    const env = getActiveEnvironment(config);
+    const envConfig = config.environments[env];
+
+    if (!isRestConfig(envConfig)) {
+      printError('Enum export is only available in REST API mode.');
+      this.exit(1);
+      return;
+    }
+
+    const rest = envConfig as RestEnvironmentConfig;
+
+    // Load enums so we get current effective values (custom + defaults)
+    try {
+      await this.withConnection('customer', async () => {
+        const exportData: EnumCategoryConfig = {
+          Company: {
+            companySupplierCategory: [...enumCache.supplierCategory()],
+            companyApprovedSupplier: [...enumCache.approvedSupplier()],
+          },
+          Leads: {
+            leadsStatus: [...enumCache.leadsStatus()],
+            leadsLcmStatus: [...enumCache.leadsLcmStatus()],
+            leadsProbabilityForSale: [...enumCache.leadsProbability()],
+          },
+          Project: {
+            projectActivity: [...enumCache.projectActivity()],
+          },
+          Contact: {
+            contactLegalBasis: [...enumCache.contactLegalBasis()],
+            contactStatus: [...enumCache.contactStatus()],
+          },
+          NCR: {
+            ncrTypeRegistration: [...enumCache.ncrType()],
+            ncrDirectCause: [...enumCache.ncrDirectCause()],
+            ncrCategory: [...enumCache.ncrCategory()],
+            ncrFeedbackType: [...enumCache.ncrFeedbackType()],
+            ncrLocation: [...enumCache.ncrLocation()],
+            ncrRootCause: [...enumCache.ncrRootCause()],
+          },
+        };
+
+        const json = JSON.stringify(exportData, null, 2);
+
+        if (flags.file) {
+          try {
+            writeFileSync(flags.file, json, 'utf-8');
+            printSuccess(`Enums exported for tenant "${rest.tenantName}" to ${flags.file}`);
+          } catch (error) {
+            printError(`Failed to write file: ${error instanceof Error ? error.message : String(error)}`);
+            this.exit(1);
+          }
+        } else {
+          console.log(json);
+        }
+      }, { loadEnums: true });
+    } catch (error) {
+      this.printClassifiedError(error, 'Failed to export enums');
+      this.exit(1);
     }
   }
 
