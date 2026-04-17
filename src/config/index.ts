@@ -7,6 +7,14 @@ export interface ServerConfig {
   url: string;
 }
 
+// ── OAuth auth config ────────────────────────────────────────────────
+
+export type AuthMethod = 'oauth' | 'bearer';
+
+export interface AuthConfig {
+  method: AuthMethod;
+}
+
 // ── MCP environment config (original, backward compatible) ───────────
 
 export interface McpEnvironmentConfig {
@@ -17,6 +25,7 @@ export interface McpEnvironmentConfig {
     projects?: ServerConfig;
     ncr?: ServerConfig;
   };
+  auth?: AuthConfig;
   token?: string;
 }
 
@@ -228,4 +237,15 @@ export function resolveApiKey(envConfig: RestEnvironmentConfig): string | undefi
  */
 export function resolveToken(envConfig: McpEnvironmentConfig): string | undefined {
   return process.env.BO_CLI_TOKEN || envConfig.token;
+}
+
+/**
+ * Effective auth method for an MCP environment.
+ * BO_CLI_TOKEN always forces bearer (CI escape hatch).
+ * Explicit auth.method wins. Otherwise, presence of a static token implies bearer.
+ */
+export function resolveAuthMethod(envConfig: McpEnvironmentConfig): AuthMethod {
+  if (process.env.BO_CLI_TOKEN) return 'bearer';
+  if (envConfig.auth?.method) return envConfig.auth.method;
+  return 'bearer';
 }

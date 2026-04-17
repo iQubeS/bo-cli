@@ -7,7 +7,7 @@ import { McpBackendClient } from './backend/mcp-backend.js';
 import { RestBackendFactory } from './backend/rest-factory.js';
 import { type OutputFormat, printError, printWarning } from './formatters/index.js';
 import { loadEnums, resetEnumCache } from './enums/cache.js';
-import { classifyError, AuthError, ConnectionError, ServerError, ValidationError, RateLimitError, QuotaExceededError } from './errors.js';
+import { classifyError, AuthError, ConnectionError, ServerError, ValidationError, RateLimitError, QuotaExceededError, ReAuthRequiredError } from './errors.js';
 
 export abstract class BaseCommand extends Command {
 
@@ -38,9 +38,11 @@ export abstract class BaseCommand extends Command {
 
   protected printClassifiedError(error: unknown, context: string): void {
     const classified = classifyError(error);
-    if (classified instanceof AuthError) {
+    if (classified instanceof ReAuthRequiredError) {
       printError(`${context}: ${classified.message}`);
-      printError('Run "bo config set" to update your credentials.');
+    } else if (classified instanceof AuthError) {
+      printError(`${context}: ${classified.message}`);
+      printError('Run "bo auth login" (OAuth) or "bo config set" (bearer) to update credentials.');
     } else if (classified instanceof ConnectionError) {
       printError(`${context}: ${classified.message}`);
       printError('Run "bo config test" to check connectivity.');

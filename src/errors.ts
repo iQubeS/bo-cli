@@ -50,6 +50,25 @@ export class QuotaExceededError extends BoCliError {
   }
 }
 
+export class OAuthError extends BoCliError {
+  constructor(message: string) {
+    super(message, 'OAUTH_ERROR');
+    this.name = 'OAuthError';
+  }
+}
+
+export class ReAuthRequiredError extends AuthError {
+  constructor(serverName?: string) {
+    super(
+      serverName
+        ? `Sign-in required for ${serverName}. Run: bo auth login`
+        : 'Sign-in required. Run: bo auth login'
+    );
+    this.name = 'ReAuthRequiredError';
+    (this as { code: string }).code = 'REAUTH_REQUIRED';
+  }
+}
+
 export function classifyError(error: unknown, serverName?: string): BoCliError {
   if (error instanceof BoCliError) return error;
 

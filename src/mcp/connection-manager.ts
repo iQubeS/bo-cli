@@ -1,6 +1,7 @@
 import { McpClient, McpServerConfig } from './client.js';
 import type { BoCliConfig, McpEnvironmentConfig } from '../config/index.js';
 import { isMcpConfig } from '../config/index.js';
+import { resolveAccessToken } from '../auth/resolve.js';
 
 export interface ServerConnection {
   name: string;
@@ -48,9 +49,10 @@ export class ConnectionManager {
     const client = new McpClient();
 
     try {
+      const accessToken = await resolveAccessToken(this.environment, serverName, mcpConfig);
       await client.connect({
         serverUrl: serverConfig.url,
-        token: mcpConfig.token,
+        token: accessToken,
       });
 
       let toolCount: number | undefined;

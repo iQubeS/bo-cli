@@ -54,12 +54,31 @@ This prompts for your environment name, backend mode (MCP or REST), and credenti
 
 ### MCP Mode (default)
 
-Connects to four MCP servers (Customer, Leads, Projects, NCR). Requires a Bearer token and server URLs.
+Connects to four MCP servers (Customer, Leads, Projects, NCR). Two auth methods are supported per environment:
+
+**OAuth (recommended for interactive use)** — device code flow against the upstream Entra tenant. Refresh-token backed. No redirect URI management, no loopback server, no per-tenant URI registration:
+
+```bash
+bo auth login                    # sign in to all 4 servers
+bo auth login --server customer  # just one
+bo auth status                   # show per-server sign-in state
+bo auth logout [--all]           # clear stored tokens
+```
+
+Enable OAuth by adding `"auth": { "method": "oauth" }` to the environment in `~/.bo-cli/config.json`. The CLI discovers the upstream Entra tenant and client ID from each MCP server's `.well-known/oauth-protected-resource` metadata at runtime — nothing to configure by hand.
+
+**Per-tenant Entra prerequisite**: each of the 4 app registrations used by the MCP servers must have **"Allow public client flows"** enabled (Azure Portal → App registration → Authentication → Advanced settings). One checkbox per app registration. No redirect URIs to coordinate.
+
+**Sign-in UX**: `bo auth login` prints a URL and a short code. Visit the URL in any browser, enter the code, and complete sign-in. The CLI polls the token endpoint and exits when tokens arrive. This is the same pattern as `az login`, `gh auth login`, and `kubectl oidc-login`.
+
+**Bearer token (for CI / service accounts)** — set `auth.method: "bearer"` (or omit the `auth` block) and:
 
 ```bash
 export BO_CLI_ENV=production
 export BO_CLI_TOKEN=your-bearer-token
 ```
+
+`BO_CLI_TOKEN` always forces bearer mode for that invocation, even when the config is set to OAuth — useful as a CI escape hatch.
 
 ### REST API Mode
 
