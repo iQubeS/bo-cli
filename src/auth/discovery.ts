@@ -144,6 +144,30 @@ export function extractClientIdFromScope(scope: string): string | null {
 }
 
 /**
+ * Infer the upstream Entra authority (`https://login.microsoftonline.com/<tenant>`)
+ * from fields the AS metadata may expose. MCP servers vary in which field they
+ * advertise: some expose `upstream_authorization_server` directly; others
+ * only expose `jwks_uri` or `end_session_endpoint` pointing at a Microsoft
+ * login URL containing the tenant GUID in its path.
+ */
+export function inferUpstreamAuthority(meta: AuthorizationServerMetadata): string | null {
+  if (meta.upstream_authorization_server) {
+    return meta.upstream_authorization_server.replace(/\/$/, '');
+  }
+  const tenantFromUrl = (url: string | undefined): string | null => {
+    if (!url) return null;
+    const m = url.match(/^(https:\/\/login\.microsoftonline\.com\/[0-9a-fA-F-]{36})/);
+    return m ? m[1] : null;
+  };
+  return (
+    tenantFromUrl(meta.jwks_uri) ||
+    tenantFromUrl(meta.end_session_endpoint) ||
+    tenantFromUrl(meta.token_endpoint) ||
+    tenantFromUrl(meta.authorization_endpoint)
+  );
+}
+
+/**
  * Full discovery for one MCP server. We rely on the server's AS metadata to
  * tell us which Entra tenant to talk to and implicitly (via the advertised
  * scope) which Entra clientId we'll authenticate against.
@@ -155,9 +179,10 @@ export async function discoverServer(mcpServerUrl: string): Promise<ServerDiscov
   }
   const asMetadata = await discoverAuthorizationServer(prm.authorization_servers[0]);
 
-  if (!asMetadata.upstream_authorization_server) {
+  const upstreamAuthority = inferUpstreamAuthority(asMetadata);
+  if (!upstreamAuthority) {
     throw new Error(
-      `AS metadata for ${asMetadata.issuer} missing upstream_authorization_server — cannot use device code flow`
+      `Cannot determine upstream Entra tenant from AS metadata for ${asMetadata.issuer}. Server must expose upstream_authorization_server, jwks_uri, or a Microsoft login URL in one of its endpoints.`
     );
   }
 
@@ -177,7 +202,7 @@ export async function discoverServer(mcpServerUrl: string): Promise<ServerDiscov
 
   return {
     resourceCanonicalUri: prm.resource,
-    upstreamAuthority: asMetadata.upstream_authorization_server.replace(/\/$/, ''),
+    upstreamAuthority,
     clientId,
     scopes,
     discoveredAt: Date.now(),

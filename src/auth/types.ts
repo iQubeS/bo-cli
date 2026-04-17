@@ -24,6 +24,8 @@ export interface AuthorizationServerMetadata {
   scopes_supported?: string[];
   code_challenge_methods_supported?: string[];
   grant_types_supported?: string[];
+  jwks_uri?: string;
+  end_session_endpoint?: string;
   upstream_authorization_server?: string;
 }
 

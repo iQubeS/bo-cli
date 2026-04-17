@@ -4,3 +4,8 @@ dist/
 .DS_Store
 oclif.manifest.json
 .claude/
+
+# Local refactor references (do not commit)
+probe-servers.mjs
+soiltech-probe*.json
+enums-test.json
